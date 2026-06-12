@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프로그래밍 기초 퀴즈 & 학습기</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f9f9f8;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-hover: rgba(0,0,0,0.22);
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --hint: #9b9b9b;
+    --accent: #3a86ff;
+    --accent-bg: #eef4ff;
+    --correct-bg: #eaf3de;
+    --correct-text: #2e5e12;
+    --correct-border: #b5d97d;
+    --wrong-bg: #fdeaea;
+    --wrong-text: #a02020;
+    --wrong-border: #f0b0b0;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414;
+      --surface: #1f1f1f;
+      --border: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.22);
+      --text: #f0f0f0;
+      --muted: #a0a0a0;
+      --hint: #666;
+      --accent: #5b9bff;
+      --accent-bg: #1a2a40;
+      --correct-bg: #182c10;
+      --correct-text: #8fd060;
+      --correct-border: #3a6018;
+      --wrong-bg: #2e1010;
+      --wrong-text: #f08080;
+      --wrong-border: #6a2020;
+    }
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  #app {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    position: relative;
+    min-height: 100%;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── ⚙️ 설정 기어 버튼 및 모달 ── */
+  .settings-icon {
+    position: absolute; top: 1.8rem; right: 1.25rem;
+    cursor: pointer; padding: 6px; z-index: 90;
+    color: var(--muted); transition: color 0.15s;
+  }
+  .settings-icon:hover { color: var(--text); }
+  .settings-icon svg { width: 26px; height: 26px; fill: currentColor; }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--surface); padding: 1.75rem; border-radius: var(--radius);
+    width: 90%; max-width: 350px; border: 1px solid var(--border); text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 1.5rem; }
+  .modal-btn {
+    width: 100%; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-size: 14px; font-weight: 500;
+    cursor: pointer; margin-bottom: 0.6rem; transition: background 0.12s;
+  }
+  .modal-btn:hover { background: var(--bg); }
+  .modal-btn.danger { color: #fff; background: var(--wrong-text); border: none; font-weight: 600; }
+  .modal-btn.danger:hover { opacity: 0.9; }
+
+  /* ── 홈 화면 ── */
+  .home-logo {
+    width: 46px; height: 46px; background: var(--accent); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;
+  }
+  .home-logo svg { width: 24px; height: 24px; fill: #fff; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 0.4rem; padding-right: 2.5rem; }
+  .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+  .set-label { font-size: 12px; font-weight: 600; color: var(--hint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.7rem; }
+
+  /* 세트 선택 카드 가로 세로 탄력 구조 */
+  .set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .set-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 1.2rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none;
+  }
+  .set-card:hover { border-color: var(--border-hover); }
+  .set-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+  .set-card .sname { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .set-card .scount { font-size: 13px; color: var(--muted); }
+  .set-card .scheck {
+    width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border-hover);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 0.7rem; transition: background 0.15s, border-color 0.15s;
+  }
+  .set-card.selected .scheck { background: var(--accent); border-color: var(--accent); }
+  .set-card .scheck svg { display: none; width: 11px; height: 11px; fill: #fff; }
+  .set-card.selected .scheck svg { display: block; }
+
+  /* 메인 액션 버튼 그룹 (학습하기 / 테스트하기) */
+  .main-actions { display: flex; flex-direction: column; gap: 10px; }
+  .action-trigger {
+    width: 100%; padding: 0.95rem; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s; text-align: center; border: none;
+  }
+  .action-trigger:disabled { opacity: 0.25; cursor: not-allowed; background: var(--hint) !important; color: #fff !important; }
+  .btn-study { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-study:not(:disabled):hover { background: var(--bg); }
+  .btn-quiz { background: var(--accent); color: #fff; }
+  .btn-quiz:not(:disabled):hover { opacity: 0.9; }
+
+  /* ── 대화면 카드 공통 스타일 (학습 & 퀴즈) ── */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; padding-right: 2.5rem; }
+  .prog-label { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .cat-badge {
+    font-size: 12px; font-weight: 500; background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); padding: 3px 10px; border-radius: 99px;
+  }
+  .prog-track { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.75rem; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s ease; }
+
+  /* 큼직해진 메인 카드 */
+  .big-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 2.5rem 2rem; margin-bottom: 1.5rem; min-height: 180px; display: flex; align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .big-card-text { font-size: 20px; font-weight: 500; line-height: 1.8; color: var(--text); width: 100%; word-break: keep-all; }
+  .big-card-text b { color: var(--accent); font-weight: 700; border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+
+  /* ── 학습 전용 하단 내비게이션 ── */
+  .nav-group { display: flex; gap: 10px; }
+  .nav-btn {
+    flex: 1; padding: 0.9rem; background: var(--surface); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.12s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .nav-btn:hover { background: var(--bg); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── 퀴즈 전용 하단 입력 구조 ── */
+  .hint-box {
+    font-size: 14px; color: #e67e22; background: #fdf5e6; padding: 8px 14px; border-radius: var(--radius-sm);
+    display: none; margin-bottom: 12px; border-left: 4px solid #e67e22; font-weight: 500;
+  }
+  [data-theme="dark"] .hint-box { background: #2c1a0c; color: #ff9f43; border-left-color: #ff9f43; }
+  .input-wrap { display: flex; gap: 8px; margin-bottom: 0.85rem; }
+  .ans-input {
+    flex: 1; padding: 0.8rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 16px; background: var(--surface); color: var(--text); transition: border-color 0.15s; outline: none;
+  }
+  .ans-input:focus { border-color: var(--accent); }
+  .ans-input:disabled { opacity: 0.55; }
+  
+  .quiz-btn-group { display: flex; gap: 8px; margin-bottom: 0.85rem; }
+  .quiz-action-btn {
+    flex: 1; padding: 0.8rem; background: var(--surface); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.12s;
+  }
+  .quiz-action-btn:hover { background: var(--bg); }
+  .hint-btn { border-color: #e67e22; color: #e67e22; }
+  .feedback { padding: 0.8rem 1.2rem; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; display: none; margin-bottom: 0.85rem; }
+  .feedback.correct { display: block; background: var(--correct-bg); color: var(--correct-text); border: 1px solid var(--correct-border); }
+  .feedback.wrong   { display: block; background: var(--wrong-bg);   color: var(--wrong-text);   border: 1px solid var(--wrong-border); }
+  .next-btn {
+    width: 100%; padding: 0.85rem; background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; display: none;
+  }
+  .next-btn.show { display: block; }
+
+  /* ── 결과 화면 ── */
+  .result-hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; margin-bottom: 1.5rem; }
+  .score-big { font-size: 56px; font-weight: 800; letter-spacing: -2px; margin-bottom: 0.2rem; }
+  .score-msg { font-size: 15px; color: var(--muted); margin-bottom: 1.75rem; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg); border-radius: var(--radius-sm); padding: 0.85rem; text-align: center; }
+  .stat-n { font-size: 24px; font-weight: 700; }
+  .stat-l { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .stat-n.ok { color: var(--correct-text); }
+  .stat-n.ng { color: var(--wrong-text); }
+  .wrong-section { border-top: 1px solid var(--border); padding-top: 1.2rem; max-height: 250px; overflow-y: auto; text-align: left; }
+  .wrong-head { font-size: 12px; font-weight: 700; color: var(--hint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.8rem; }
+  .wrong-item { font-size: 13px; padding: 0.6rem 0; border-bottom: 1px solid var(--border); line-height: 1.6; }
+  .wrong-item:last-child { border-bottom: none; }
+  .wrong-q { color: var(--muted); }
+  .wrong-u { color: var(--wrong-text); }
+  .wrong-a { color: var(--correct-text); font-weight: 600; }
+  .result-btns { display: flex; gap: 10px; }
+  .result-btns button {
+    flex: 1; padding: 0.85rem; background: var(--surface); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.12s;
+  }
+  .result-btns button:hover { background: var(--bg); }
+  .result-btns .primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  @media (min-width: 600px) {
+    .main-actions { flex-direction: row; }
+  }
+  @media (max-width: 440px) {
+    #app { padding: 1.5rem 1rem 3rem; }
+    .score-big { font-size: 46px; }
+    .settings-icon { top: 1.3rem; right: 1rem; }
+    .big-card { padding: 2rem 1.25rem; min-height: 150px; }
+    .big-card-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="settings-icon" id="global-settings-btn" onclick="openModal()">
+    <svg viewBox="0 0 24 24">
+      <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content">
+      <div class="modal-title">⚙️ 시스템 제어 메뉴</div>
+      <button class="modal-btn" onclick="goHomeFromModal()">첫 화면(세트 선택)으로 이동</button>
+      <button class="modal-btn danger" onclick="exitApp()">프로그램 아예 종료하기</button>
+      <button class="modal-btn" style="margin-top:10px; border:none; background:#eee; color:#333;" onclick="closeModal(force=true)">창 닫기</button>
+    </div>
+  </div>
+
+  <div id="home" class="screen active">
+    <div class="home-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 2a8 8 0 100 16A8 8 0 0012 4zm-1 3h2v6h-2V7zm0 8h2v2h-2v-2z"/></svg>
+    </div>
+    <h1>프로그래밍 기초 퀴즈 & 학습</h1>
+    <p class="subtitle">공부하거나 테스트할 세트를 먼저 골라주세요.</p>
+
+    <p class="set-label">문제 세트 선택 (중복 선택 가능)</p>
+    <div class="set-grid">
+      <div class="set-card" data-set="0" onclick="toggleSet(0)">
+        <div class="scheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="sname">프로그램 기초</div>
+        <div class="scount">40문제 · 단답식 핵심어</div>
+      </div>
+      <div class="set-card" data-set="1" onclick="toggleSet(1)">
+        <div class="scheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="sname">능력 단위 9개</div>
+        <div class="scount">9문제 · 지문형 빈칸 채우기</div>
+      </div>
+    </div>
+
+    <div class="main-actions">
+      <button class="action-trigger btn-study" id="study-btn" onclick="startStudy()" disabled>📖 선택 세트 학습하기</button>
+      <button class="action-trigger btn-quiz" id="start-btn" onclick="startQuiz()" disabled>⚡ 실전 퀴즈 풀기</button>
+    </div>
+  </div>
+
+  <div id="study" class="screen">
+    <div class="top-bar">
+      <span class="prog-label" id="study-prog-label">1 / 49</span>
+      <span class="cat-badge" id="study-cat-badge">카테고리</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="study-prog-fill" style="width:0%"></div></div>
+    
+    <p class="set-label">👀 문장과 정답 전체 요약 암기</p>
+    <div class="big-card">
+      <div class="big-card-text" id="study-card-text"></div>
+    </div>
+    
+    <div class="nav-group">
+      <button class="nav-btn" id="study-prev-btn" onclick="moveStudy(-1)">← 이전 문장</button>
+      <button class="nav-btn" id="study-next-btn" onclick="moveStudy(1)" style="background:var(--accent); color:white; border-color:var(--accent);">다음 문장 →</button>
+    </div>
+  </div>
+
+  <div id="quiz" class="screen">
+    <div class="top-bar">
+      <span class="prog-label" id="prog-label">1 / 49</span>
+      <span class="cat-badge" id="cat-badge">카테고리</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    
+    <p class="set-label">❓ 문제를 읽고 정답을 입력하세요</p>
+    <div class="big-card">
+      <div class="big-card-text" id="q-text"></div>
+    </div>
+    
+    <div class="hint-box" id="hint-box"></div>
+
+    <div class="input-wrap">
+      <input class="ans-input" id="ans" type="text" placeholder="정답 입력..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+    </div>
+    
+    <div class="quiz-btn-group" id="btn-group">
+      <button class="quiz-action-btn hint-btn" onclick="showHint()">💡 초성 힌트</button>
+      <button class="quiz-action-btn" style="background:var(--accent); color:white; border:none;" onclick="check()">확인 (Enter)</button>
+    </div>
+
+    <div class="feedback" id="fb"></div>
+    <button class="next-btn" id="next-btn" onclick="next()">다음 문제 →</button>
+  </div>
+
+  <div id="result" class="screen">
+    <div class="result-hero">
+      <div class="score-big" id="r-score"></div>
+      <div class="score-msg" id="r-msg"></div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-n ok" id="r-ok"></div><div class="stat-l">정답</div></div>
+        <div class="stat"><div class="stat-n ng" id="r-ng"></div><div class="stat-l">오답</div></div>
+        <div class="stat"><div class="stat-n"   id="r-tot"></div><div class="stat-l">전체</div></div>
+      </div>
+      <div class="wrong-section" id="wrong-section"></div>
+    </div>
+    <div class="result-btns">
+      <button class="primary" onclick="goHome()">🏠 홈화면으로 복귀</button>
+      <button id="retry-btn" onclick="retryWrong()">🔁 틀린 것만 복습</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const SET0 = [
+  {cat:"프로그램 기초", q:"프로그램 실행의 시작점이 되는 함수는?", a:"main 함수"},
+  {cat:"프로그램 기초", q:"값을 저장하기 위해 사용하는 메모리 공간은?", a:"변수"},
+  {cat:"프로그램 기초", q:"변경되지 않는 값을 무엇이라 하는가?", a:"상수"},
+  {cat:"프로그램 기초", q:"데이터를 처리하는 연산 기호는?", a:"연산자"},
+  {cat:"프로그램 기초", q:"프로그램의 실행 흐름을 제어하는 구조는?", a:"제어문"},
+  {cat:"프로그램 기초", q:"조건에 따라 실행을 나누는 문장은?", a:"조건문"},
+  {cat:"프로그램 기초", q:"특정 작업을 반복 수행하는 문장은?", a:"반복문"},
+  {cat:"프로그램 기초", q:"입력 데이터를 받아들이는 기능은?", a:"입력"},
+  {cat:"프로그램 기초", q:"처리 결과를 사용자에게 보여주는 기능은?", a:"출력"},
+  {cat:"프로그램 기초", q:"프로그램 실행 중 오류가 발생하는 것을 무엇이라 하는가?", a:"에러"},
+  {cat:"자료형", q:"정수를 저장하는 자료형은?", a:"int"},
+  {cat:"자료형", q:"실수를 저장하는 자료형은?", a:"float"},
+  {cat:"자료형", q:"참(True) 또는 거짓(False)을 표현하는 자료형은?", a:"boolean"},
+  {cat:"자료형", q:"여러 값을 하나의 변수처럼 묶는 구조는?", a:"배열"},
+  {cat:"자료형", q:"서로 다른 자료형을 묶는 구조는?", a:"구조체"},
+  {cat:"함수/모듈", q:"특정 기능을 수행하는 코드의 묶음은?", a:"함수"},
+  {cat:"함수/모듈", q:"함수를 호출할 때 전달하는 값은?", a:"인자"},
+  {cat:"함수/모듈", q:"함수 실행 후 되돌려주는 값은?", a:"반환값"},
+  {cat:"함수/모듈", q:"프로그램을 기능별로 나누는 것을 무엇이라 하는가?", a:"모듈화"},
+  {cat:"함수/모듈", q:"동일한 이름의 함수를 여러 형태로 사용하는 것은?", a:"오버로딩"},
+  {cat:"오류/디버깅", q:"문법 규칙을 어겨 발생하는 오류는?", a:"문법 오류"},
+  {cat:"오류/디버깅", q:"실행 중 발생하는 오류는?", a:"런타임 오류"},
+  {cat:"오류/디버깅", q:"논리적으로 잘못된 결과가 나오는 오류는?", a:"논리 오류"},
+  {cat:"오류/디버깅", q:"오류를 찾아 수정하는 과정을 무엇이라 하는가?", a:"디버깅"},
+  {cat:"오류/디버깅", q:"프로그램 실행 과정을 추적하여 오류를 찾는 도구는?", a:"디버거"},
+  {cat:"품질/개발", q:"프로그램이 요구사항에 맞게 동작하는지 확인하는 과정은?", a:"테스트"},
+  {cat:"품질/개발", q:"코드의 가독성을 높이기 위해 설명을 작성하는 것은?", a:"주석"},
+  {cat:"품질/개발", q:"프로그램을 사람이 이해하기 쉽게 구조화하는 것은?", a:"코드 정리"},
+  {cat:"품질/개발", q:"프로그램의 성능을 향상시키는 작업은?", a:"최적화"},
+  {cat:"품질/개발", q:"개발된 프로그램을 사용자에게 제공하는 과정을 무엇이라 하는가?", a:"배포"},
+  {cat:"자료구조", q:"데이터를 순서대로 저장하며 크기가 고정된 자료구조는?", a:"배열"},
+  {cat:"자료구조", q:"필요에 따라 크기가 변할 수 있는 자료구조는?", a:"리스트"},
+  {cat:"객체지향", q:"객체지향에서 데이터와 기능을 하나로 묶는 개념은?", a:"캡슐화"},
+  {cat:"객체지향", q:"상위 클래스의 속성과 기능을 물려받는 개념은?", a:"상속"},
+  {cat:"객체지향", q:"하나의 이름으로 여러 기능을 수행하는 개념은?", a:"다형성"},
+  {cat:"협업/개발", q:"프로그램의 변경 이력을 관리하는 것은?", a:"버전 관리"},
+  {cat:"협업/개발", q:"여러 개발자가 동시에 코드를 관리하는 시스템은?", a:"형상 관리 시스템"},
+  {cat:"코드 품질", q:"동일한 기능을 하는 코드를 하나로 통합하여 중복을 줄이는 작업은?", a:"리팩토링"},
+  {cat:"코드 품질", q:"프로그램의 동작 과정을 단계적으로 표현한 그림은?", a:"순서도"},
+  {cat:"실행 환경", q:"프로그램 실행 전에 코드를 기계어로 변환하는 과정은?", a:"컴파일"},
+];
+
+const SET1 = [
+  {cat:"개발자 환경 구축", a:"버전 관리", display:"코드를 작성하기 위한 에디터(VSCode, IntelliJ 등), ___ 시스템(Git), 웹 서버 등 프로젝트 수행에 필요한 소프트웨어와 개발 환경을 내 PC에 설치하고 세팅하는 능력입니다."},
+  {cat:"응용 SW 기초 기술 활용", a:"데이터베이스", display:"개발에 필수적인 운영체제(Windows, Linux), 네트워크 통신 원리(TCP/IP, HTTP), ___의 기본 개념 등 IT 인프라 전반에 대한 기초 배경지식을 다룹니다."},
+  {cat:"프로그래밍 언어 활용", a:"객체지향", display:"Java, Python, C 등 주력 프로그래밍 언어의 기본 문법(변수, 제어문, 배열 등)을 익히고, ___과 같은 핵심 프로그래밍 개념을 이해하여 코드를 작성하는 능력입니다."},
+  {cat:"프로그래밍 언어 응용", a:"예외 처리", display:"기초 문법을 넘어 자료구조, 알고리즘, ___, 스레드(Thread) 등 심화된 프로그래밍 기법을 적용하여 효율적이고 복잡한 소프트웨어 기능을 구현하는 능력입니다."},
+  {cat:"SQL 활용", a:"CRUD", display:"관계형 데이터베이스(Oracle, MySQL 등) 시스템을 이해하고, 데이터를 조회, 추가, 수정, 삭제(___)하기 위한 SQL 명령어를 작성하여 애플리케이션과 데이터를 연동하는 능력입니다."},
+  {cat:"화면 구현", a:"HTML", display:"기획된 UI/UX 설계서를 바탕으로 ___, CSS, JavaScript 등의 웹 기술을 활용하여 실제 작동하는 웹 페이지나 애플리케이션 화면을 시각적으로 만들어내는 능력입니다."},
+  {cat:"UI 테스트", a:"브라우저", display:"만들어진 화면이 사용자의 조작에 맞게 정상적으로 반응하는지, 디자인 시안과 일치하는지, 다양한 ___나 기기 환경에서도 깨짐 없이 잘 보이는지를 검증합니다."},
+  {cat:"애플리케이션 테스트", a:"통합 테스트", display:"소프트웨어 내부 로직에 숨어있는 결함(버그)을 찾아내기 위해 단위 테스트와 ___를 진행하고, 문제를 수정(디버깅)하여 프로그램의 안정성을 높이는 능력입니다."},
+  {cat:"애플리케이션 배포", a:"빌드", display:"테스트가 완료된 최종 코드를 실행 가능한 형태로 묶어(___), 실제 사용자가 접속할 수 있는 운영 서버에 업로드하고 서비스가 구동되도록 만드는 능력입니다."},
+];
+
+const ALIASES = {
+  "main 함수": ["main","main함수","main 함수"],
+  "반환값": ["반환값","리턴값","return값","리턴 값"],
+  "형상 관리 시스템": ["형상 관리 시스템","형상관리시스템","형상관리"],
+  "버전 관리": ["버전 관리","버전관리"],
+  "코드 정리": ["코드 정리","코드정리"],
+  "논리 오류": ["논리 오류","논리오류"],
+  "런타임 오류": ["런타임 오류","런타임오류"],
+  "문법 오류": ["문법 오류","문법오류"],
+  "예외 처리": ["예외 처리","예외처리"],
+  "통합 테스트": ["통합 테스트","통합테스트"],
+};
+
+function getChoSung(str) {
+  const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+  let result = "";
+  for (let i = 0; i < str.length; i++) {
+    let code = str.charCodeAt(i) - 44032;
+    if (code >= 0 && code <= 11172) { result += cho[Math.floor(code / 588)]; } 
+    else { result += str.charAt(i) === " " ? " " : "_"; }
+  }
+  return result;
+}
+
+let selSets = []; 
+let qs = [], cur = 0, ok = 0, wrongs = [], done = false;
+let studyQs = [], studyCur = 0;
+
+function toggleSet(i) {
+  const card = document.querySelector(`.set-card[data-set="${i}"]`);
+  const idx = selSets.indexOf(i);
+  if (idx === -1) { selSets.push(i); card.classList.add('selected'); }
+  else { selSets.splice(idx,1); card.classList.remove('selected'); }
+  
+  const hasSelection = selSets.length > 0;
+  document.getElementById('start-btn').disabled = !hasSelection;
+  document.getElementById('study-btn').disabled = !hasSelection;
+}
+
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [b[i],b[j]] = [b[j],b[i]];
+  }
+  return b;
+}
+
+function norm(s) { return s.trim().replace(/\s+/g,'').toLowerCase(); }
+
+function isCorrect(userAns, correct) {
+  const list = ALIASES[correct] ? ALIASES[correct].map(norm) : [norm(correct)];
+  return list.includes(norm(userAns));
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function openModal() { document.getElementById('modal-overlay').classList.add('active'); }
+function closeModal(event, force=false) {
+  if(force || event.target.id === 'modal-overlay') {
+    document.getElementById('modal-overlay').classList.remove('active');
+  }
+}
+function goHomeFromModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  goHome();
+}
+
+/* ── 🛑 진짜 나가지는 아예 종료 기능 ── */
+function exitApp() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  
+  // 1. 창 닫기 시도
+  window.close();
+  
+  // 2. 일반 브라우저 탭이라 안 닫힐 경우를 대비한 완전 백지화(안전장치)
+  setTimeout(() => {
+    document.body.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#141414; color:#666; font-family:sans-serif;">
+        <p style="font-size:18px; font-weight:bold; margin-bottom:8px;">프로그램이 종료되었습니다.</p>
+        <p style="font-size:14px; color:#444;">이 탭이나 창을 닫으셔도 됩니다.</p>
+      </div>
+    `;
+  }, 100);
+}
+
+/* ── 학습 시스템 ── */
+function startStudy() {
+  let pool = [];
+  if (selSets.includes(0)) pool = pool.concat(SET0);
+  if (selSets.includes(1)) pool = pool.concat(SET1);
+  studyQs = pool;
+  studyCur = 0;
+  show('study');
+  loadStudyCard();
+}
+
+function loadStudyCard() {
+  const q = studyQs[studyCur];
+  const total = studyQs.length;
+  
+  document.getElementById('study-prog-label').textContent = `${studyCur + 1} / ${total}`;
+  document.getElementById('study-cat-badge').textContent = q.cat;
+  document.getElementById('study-prog-fill').style.width = `${((studyCur + 1) / total) * 100}%`;
+  
+  const textEl = document.getElementById('study-card-text');
+  if (q.display) {
+    let fullSentence = q.display.replace("___", `<b>${q.a}</b>`);
+    textEl.innerHTML = `📌 [${q.cat}]<br><br>${fullSentence}`;
+  } else {
+    textEl.innerHTML = `❓ <b>문제</b>: ${q.q}<br><br>➡️ <b>정답</b>: <b>${q.a}</b>`;
+  }
+  
+  document.getElementById('study-prev-btn').disabled = (studyCur === 0);
+  const nextBtn = document.getElementById('study-next-btn');
+  if (studyCur === total - 1) {
+    nextBtn.textContent = "💻 암기 완료! 홈으로";
+  } else {
+    nextBtn.textContent = "다음 문장 →";
+  }
+}
+
+function moveStudy(dir) {
+  studyCur += dir;
+  if (studyCur >= studyQs.length) {
+    goHome();
+  } else {
+    loadStudyCard();
+  }
+}
+
+/* ── 퀴즈 시스템 ── */
+function startQuiz() {
+  let pool = [];
+  if (selSets.includes(0)) pool = pool.concat(SET0);
+  if (selSets.includes(1)) pool = pool.concat(SET1);
+  qs = shuffle(pool);
+  cur = 0; ok = 0; wrongs = [];
+  show('quiz');
+  loadQ();
+}
+
+function loadQ() {
+  done = false;
+  const q = qs[cur];
+  const total = qs.length;
+  document.getElementById('prog-label').textContent = `${cur+1} / ${total}`;
+  document.getElementById('cat-badge').textContent = q.cat;
+  document.getElementById('prog-fill').style.width = `${(cur/total)*100}%`;
+
+  const el = document.getElementById('q-text');
+  if (q.display) {
+    const parts = q.display.split('___');
+    el.innerHTML = parts[0] + '<span style="color:var(--accent); font-weight:bold;">[ 빈칸 ]</span>' + (parts[1]||'');
+  } else {
+    el.textContent = q.q;
+  }
+
+  const hb = document.getElementById('hint-box');
+  hb.style.display = 'none'; hb.textContent = '';
+
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback'; fb.textContent = '';
+  const nb = document.getElementById('next-btn');
+  nb.className = 'next-btn';
+  nb.textContent = (cur < qs.length-1) ? '다음 문제 →' : '결과 보기 →';
+
+  document.getElementById('btn-group').style.display = 'flex';
+  const inp = document.getElementById('ans');
+  inp.value = ''; inp.disabled = false;
+  setTimeout(() => inp.focus(), 50);
+}
+
+function showHint() {
+  const q = qs[cur];
+  const hb = document.getElementById('hint-box');
+  hb.textContent = `힌트(초성): ${getChoSung(q.a)}`;
+  hb.style.display = 'block';
+}
+
+function check() {
+  if (done) return;
+  const inp = document.getElementById('ans');
+  const val = inp.value.trim();
+  if (!val) return;
+  done = true; inp.disabled = true;
+
+  document.getElementById('btn-group').style.display = 'none';
+  const q = qs[cur];
+  const fb = document.getElementById('fb');
+  if (isCorrect(val, q.a)) {
+    ok++;
+    fb.className = 'feedback correct'; fb.textContent = '✓ 정답입니다!';
+  } else {
+    wrongs.push({label: q.display ? q.cat + ' (빈칸)' : q.q, user: val, ans: q.a});
+    fb.className = 'feedback wrong'; fb.textContent = `✗ 오답 (정답: ${q.a})`;
+  }
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function next() {
+  cur++;
+  if (cur >= qs.length) showResult();
+  else loadQ();
+}
+
+function showResult() {
+  show('result');
+  const total = qs.length;
+  const pct = Math.round(ok/total*100);
+  document.getElementById('r-score').textContent = pct + '점';
+  let msg = '더 연습해봐요!';
+  if (pct >= 90) msg = '완벽해요! 🎉';
+  else if (pct >= 70) msg = '잘 했어요! 조금만 더!';
+  else if (pct >= 50) msg = '절반 이상 맞았어요!';
+  document.getElementById('r-msg').textContent = msg;
+  document.getElementById('r-ok').textContent = ok;
+  document.getElementById('r-ng').textContent = wrongs.length;
+  document.getElementById('r-tot').textContent = total;
+
+  const ws = document.getElementById('wrong-section');
+  if (wrongs.length === 0) {
+    ws.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--hint);padding:0.5rem 0">틀린 문제가 없어요!</p>';
+  } else {
+    ws.innerHTML = `<div class="wrong-head">틀린 문제 복습 (${wrongs.length}개)</div>` +
+      wrongs.map(w =>
+        `<div class="wrong-item"><span class="wrong-q">${w.label}</span><br>` +
+        `내 답: <span class="wrong-u">${w.user}</span> ➡️ 정답: <span class="wrong-a">${w.ans}</span></div>`
+      ).join('');
+  }
+  document.getElementById('retry-btn').style.display = wrongs.length > 0 ? '' : 'none';
+}
+
+function retryWrong() {
+  const all = [...SET0, ...SET1];
+  qs = shuffle(wrongs.map(w => all.find(q => q.a === w.ans) || {cat:'복습', q:w.label, a:w.ans}));
+  cur = 0; ok = 0; wrongs = [];
+  show('quiz');
+  loadQ();
+}
+
+function goHome() {
+  selSets = []; 
+  document.querySelectorAll('.set-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('study-btn').disabled = true;
+  show('home');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('quiz').classList.contains('active')) {
+      if (!done) check();
+      else if (document.getElementById('next-btn').classList.contains('show')) next();
+    }
+  }
+});
+</script>
+</body>
+</html>
