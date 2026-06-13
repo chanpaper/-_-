@@ -324,51 +324,15 @@ const SET0 = [
  
 // 능력 단위: keywords = 굵게 표시할 단어 3개, 문제 풀 때 그 중 1개 랜덤 빈칸
 const SET1 = [
-  {
-    cat:"개발자 환경 구축",
-    text:"코드를 작성하기 위한 에디터(VSCode, IntelliJ 등), {버전 관리} 시스템(Git), 웹 서버 등 프로젝트 수행에 필요한 {소프트웨어}와 {개발 환경}을 내 PC에 설치하고 세팅하는 능력입니다.",
-    keywords:["버전 관리","소프트웨어","개발 환경"]
-  },
-  {
-    cat:"응용 SW 기초 기술 활용",
-    text:"개발에 필수적인 {운영체제}(Windows, Linux), 네트워크 통신 원리(TCP/IP, HTTP), {데이터베이스}의 기본 개념 등 {IT 인프라} 전반에 대한 기초 배경지식을 다룹니다.",
-    keywords:["운영체제","데이터베이스","IT 인프라"]
-  },
-  {
-    cat:"프로그래밍 언어 활용",
-    text:"Java, Python, C 등 주력 프로그래밍 언어의 {기본 문법}(변수, 제어문, 배열 등)을 익히고, {객체지향}과 같은 핵심 프로그래밍 {개념}을 이해하여 코드를 작성하는 능력입니다.",
-    keywords:["기본 문법","객체지향","개념"]
-  },
-  {
-    cat:"프로그래밍 언어 응용",
-    text:"기초 문법을 넘어 {자료구조}, {알고리즘}, {예외 처리}, 스레드(Thread) 등 심화된 프로그래밍 기법을 적용하여 효율적이고 복잡한 소프트웨어 기능을 구현하는 능력입니다.",
-    keywords:["자료구조","알고리즘","예외 처리"]
-  },
-  {
-    cat:"SQL 활용",
-    text:"관계형 {데이터베이스}(Oracle, MySQL 등) 시스템을 이해하고, 데이터를 조회, 추가, 수정, 삭제({CRUD})하기 위한 {SQL} 명령어를 작성하여 애플리케이션과 데이터를 연동하는 능력입니다.",
-    keywords:["데이터베이스","CRUD","SQL"]
-  },
-  {
-    cat:"화면 구현",
-    text:"기획된 {UI/UX} 설계서를 바탕으로 {HTML}, CSS, JavaScript 등의 웹 기술을 활용하여 실제 작동하는 {웹 페이지}나 애플리케이션 화면을 시각적으로 만들어내는 능력입니다.",
-    keywords:["UI/UX","HTML","웹 페이지"]
-  },
-  {
-    cat:"UI 테스트",
-    text:"만들어진 화면이 사용자의 조작에 맞게 정상적으로 반응하는지, {디자인 시안}과 일치하는지, 다양한 {브라우저}나 기기 환경에서도 깨짐 없이 잘 보이는지를 {검증}합니다.",
-    keywords:["디자인 시안","브라우저","검증"]
-  },
-  {
-    cat:"애플리케이션 테스트",
-    text:"소프트웨어 내부 로직에 숨어있는 {결함}(버그)을 찾아내기 위해 {단위 테스트}와 {통합 테스트}를 진행하고, 문제를 수정(디버깅)하여 프로그램의 안정성을 높이는 능력입니다.",
-    keywords:["결함","단위 테스트","통합 테스트"]
-  },
-  {
-    cat:"애플리케이션 배포",
-    text:"테스트가 완료된 최종 코드를 실행 가능한 형태로 묶어({빌드}), 실제 사용자가 접속할 수 있는 {운영 서버}에 업로드하고 {서비스}가 구동되도록 만드는 능력입니다.",
-    keywords:["빌드","운영 서버","서비스"]
-  },
+  {cat:"능력 단위", q:"코드 작성을 위한 에디터, Git 등 개발에 필요한 소프트웨어와 환경을 PC에 설치하고 세팅하는 능력은?", a:"개발자 환경 구축"},
+  {cat:"능력 단위", q:"운영체제, 네트워크 통신 원리, 데이터베이스 등 IT 인프라 전반의 기초 배경지식을 다루는 능력은?", a:"응용 SW 기초 기술 활용"},
+  {cat:"능력 단위", q:"Java, Python 등 프로그래밍 언어의 기본 문법과 객체지향 개념을 이해하고 코드를 작성하는 능력은?", a:"프로그래밍 언어 활용"},
+  {cat:"능력 단위", q:"자료구조, 알고리즘, 예외 처리, 스레드 등 심화 프로그래밍 기법을 적용하는 능력은?", a:"프로그래밍 언어 응용"},
+  {cat:"능력 단위", q:"관계형 데이터베이스를 이해하고 데이터 CRUD를 위한 SQL 명령어를 작성하는 능력은?", a:"SQL 활용"},
+  {cat:"능력 단위", q:"UI/UX 설계서를 바탕으로 HTML, CSS, JavaScript를 활용해 웹 화면을 만드는 능력은?", a:"화면 구현"},
+  {cat:"능력 단위", q:"만들어진 화면이 정상 반응하는지, 디자인과 일치하는지, 다양한 브라우저에서 깨짐 없이 보이는지 검증하는 능력은?", a:"UI 테스트"},
+  {cat:"능력 단위", q:"소프트웨어 결함을 찾기 위해 단위·통합 테스트를 진행하고 디버깅하여 안정성을 높이는 능력은?", a:"애플리케이션 테스트 수행"},
+  {cat:"능력 단위", q:"완성된 코드를 빌드하여 운영 서버에 업로드하고 서비스가 구동되도록 만드는 능력은?", a:"애플리케이션 배포"},
 ];
  
 const ALIASES = {
@@ -380,43 +344,20 @@ const ALIASES = {
   "논리 오류":["논리 오류","논리오류"],
   "런타임 오류":["런타임 오류","런타임오류"],
   "문법 오류":["문법 오류","문법오류"],
-  "예외 처리":["예외 처리","예외처리"],
-  "통합 테스트":["통합 테스트","통합테스트"],
-  "단위 테스트":["단위 테스트","단위테스트"],
-  "IT 인프라":["IT 인프라","it인프라","it 인프라"],
-  "UI/UX":["UI/UX","uiux","ui/ux"],
-  "웹 페이지":["웹 페이지","웹페이지"],
-  "운영 서버":["운영 서버","운영서버"],
-  "개발 환경":["개발 환경","개발환경"],
-  "기본 문법":["기본 문법","기본문법"],
+  "개발자 환경 구축":["개발자 환경 구축","개발자환경구축"],
+  "응용 SW 기초 기술 활용":["응용 SW 기초 기술 활용","응용sw기초기술활용","응용 sw 기초 기술 활용"],
+  "프로그래밍 언어 활용":["프로그래밍 언어 활용","프로그래밍언어활용"],
+  "프로그래밍 언어 응용":["프로그래밍 언어 응용","프로그래밍언어응용"],
+  "SQL 활용":["SQL 활용","sql 활용","sql활용"],
+  "화면 구현":["화면 구현","화면구현"],
+  "UI 테스트":["UI 테스트","ui 테스트","ui테스트"],
+  "애플리케이션 테스트 수행":["애플리케이션 테스트 수행","애플리케이션테스트수행","애플리케이션 테스트"],
+  "애플리케이션 배포":["애플리케이션 배포","애플리케이션배포"],
 };
- 
-/* ─── 능력 단위 파싱 ─── */
-// {단어} 형태를 파싱해서 학습용(굵게)과 문제용(랜덤빈칸) HTML 생성
-function parseStudyHTML(item) {
-  return item.text.replace(/\{([^}]+)\}/g, '<b>$1</b>');
-}
- 
-function parseExamHTML(item, blankWord) {
-  // 정답 글자 수만큼 공백 (한글 2칸, 영문/숫자 1칸)
-  const spaces = blankWord.split('').map(c => /[가-힣]/.test(c) ? '\u00A0\u00A0' : '\u00A0').join('');
-  return item.text.replace(/\{([^}]+)\}/g, (match, word) => {
-    if (word === blankWord) {
-      return `<span class="blank-mark">[${spaces}]</span>`;
-    }
-    return `<b>${word}</b>`;
-  });
-}
- 
-function pickRandomKeyword(item) {
-  return item.keywords[Math.floor(Math.random() * item.keywords.length)];
-}
  
 /* ─── 상태 ─── */
 let selSets = [], studyQs = [], studyCur = 0;
 let qs = [], cur = 0, okCnt = 0, wrongs = [], answered = false, combo = 0;
-// 각 문제별 빈칸 단어 저장 (랜덤 결정 후 고정)
-let examBlanks = [];
  
 /* ─── 유틸 ─── */
 function shuffle(a) {
@@ -443,11 +384,20 @@ function toast(msg, dur=2200) {
 }
 function getHint(str) {
   const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  if (/[a-zA-Z0-9]/.test(str)) return str.split('').map(c => c === ' ' ? ' ' : '_').join('');
   let r = '';
   for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i) - 44032;
-    r += code >= 0 && code <= 11172 ? cho[Math.floor(code/588)] : str[i] === ' ' ? ' ' : '_';
+    const c = str[i];
+    if (c === ' ') { r += ' '; continue; }
+    const code = c.charCodeAt(0) - 44032;
+    if (code >= 0 && code <= 11172) {
+      // 한글 → 초성
+      r += cho[Math.floor(code / 588)];
+    } else if (/[a-zA-Z0-9]/.test(c)) {
+      // 영문/숫자 → 언더바
+      r += '_';
+    } else {
+      r += c;
+    }
   }
   return r;
 }
@@ -493,12 +443,7 @@ function loadStudy() {
   document.getElementById('st-cat').textContent = q.cat;
   document.getElementById('st-bar').style.width = `${((studyCur+1)/total)*100}%`;
   const el = document.getElementById('st-text');
-  if (q.text) {
-    // 능력 단위: {단어} → <b>단어</b>
-    el.innerHTML = parseStudyHTML(q);
-  } else {
-    el.innerHTML = `${q.q}<br><br>정답: <b>${q.a}</b>`;
-  }
+  el.innerHTML = `${q.q}<br><br>정답: <b>${q.a}</b>`;
   document.getElementById('st-prev').disabled = studyCur === 0;
   const nxt = document.getElementById('st-next');
   nxt.textContent = studyCur === total-1 ? '학습 완료 →' : '다음 →';
@@ -513,13 +458,7 @@ function moveStudy(dir) {
 function buildExamPool() {
   let pool = [];
   if (selSets.includes(0)) pool = pool.concat(SET0);
-  if (selSets.includes(1)) {
-    // 능력 단위: 9문제, 매번 3개 키워드 중 1개 랜덤 빈칸
-    SET1.forEach(item => {
-      const kw = item.keywords[Math.floor(Math.random() * item.keywords.length)];
-      pool.push({ cat: item.cat, text: item.text, a: kw, _blankWord: kw, _isSet1: true });
-    });
-  }
+  if (selSets.includes(1)) pool = pool.concat(SET1);
   return pool;
 }
  
@@ -539,11 +478,7 @@ function loadQ() {
   document.getElementById('ex-card').classList.remove('ok-flash','ng-flash');
  
   const el = document.getElementById('ex-text');
-  if (q._isSet1) {
-    el.innerHTML = parseExamHTML(q, q._blankWord);
-  } else {
-    el.textContent = q.q;
-  }
+  el.textContent = q.q;
  
   document.getElementById('hint-box').style.display = 'none';
   document.getElementById('hint-box').textContent = '';
@@ -573,7 +508,7 @@ function revealAnswer() {
   const fb = document.getElementById('fb'); fb.className = 'feedback ng';
   document.getElementById('fb-text').textContent = `정답: ${q.a}`;
   document.getElementById('next-btn').classList.add('on');
-  wrongs.push({ label: q._isSet1 ? `${q.cat} — "${q.a}" 빈칸` : q.q, user:'(정답 봄)', ans: q.a, _isSet1: q._isSet1||false, _cat: q.cat });
+  wrongs.push({ label: q.q, user:'(정답 봄)', ans: q.a });
   combo = 0;
 }
 function check() {
@@ -595,7 +530,7 @@ function check() {
   } else {
     combo = 0; inp.className = 'ans-inp ng'; card.classList.add('ng-flash'); fb.className = 'feedback ng';
     document.getElementById('fb-text').textContent = `✗ 오답 — 정답: ${q.a}`;
-    wrongs.push({ label: q._isSet1 ? `${q.cat} — "${q.a}" 빈칸` : q.q, user: val, ans: q.a, _isSet1: q._isSet1||false, _cat: q.cat });
+    wrongs.push({ label: q.q, user: val, ans: q.a });
   }
   document.getElementById('next-btn').classList.add('on');
 }
@@ -645,21 +580,8 @@ function showResult() {
 }
  
 function retryWrong() {
-  const all = [...SET0];
-  SET1.forEach(item => {
-    item.keywords.forEach(kw => {
-      all.push({ cat: item.cat, text: item.text, a: kw, _blankWord: kw, _isSet1: true });
-    });
-  });
-  // 틀린 것만 다시 풀 때는 틀렸던 그 빈칸 단어 그대로 고정
-  qs = shuffle(wrongs.map(w => {
-    if (w._isSet1) {
-      // 능력 단위: 틀렸던 빈칸 단어 그대로
-      const item = SET1.find(s => s.cat === w._cat);
-      if (item) return { cat: item.cat, text: item.text, a: w.ans, _blankWord: w.ans, _isSet1: true };
-    }
-    return all.find(q => q.a === w.ans && !q._isSet1) || { cat:'복습', q: w.label, a: w.ans };
-  }).filter(Boolean));
+  const all = [...SET0, ...SET1];
+  qs = shuffle(wrongs.map(w => all.find(q => q.a === w.ans) || { cat:'복습', q: w.label, a: w.ans }));
   cur = 0; okCnt = 0; wrongs = []; combo = 0;
   show('exam'); loadQ();
 }
