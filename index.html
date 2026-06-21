@@ -6,6 +6,8 @@
 <title>프로그래밍 기초 학습</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+/* ── 시험 모드 변수 ── */
 :root {
   --bg: #f5f5f4; --surface: #fff; --border: rgba(0,0,0,0.09); --border-h: rgba(0,0,0,0.2);
   --text: #1a1a1a; --muted: #666; --hint-c: #aaa;
@@ -14,6 +16,7 @@
   --ng: #c62828; --ng-bg: #ffebee; --ng-border: #ef9a9a;
   --combo: #f59e0b; --radius: 14px; --radius-s: 9px;
   --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --mode-btn-bg: #0f172a; --mode-btn-text: #e2e8f0;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -23,37 +26,69 @@
     --ok:#66bb6a; --ok-bg:#1b2e1c; --ok-border:#2e5430;
     --ng:#ef5350; --ng-bg:#2c1515; --ng-border:#5c2020;
     --shadow:0 2px 8px rgba(0,0,0,0.3);
+    --mode-btn-bg: #e2e8f0; --mode-btn-text: #0f172a;
   }
 }
-html,body { min-height:100%; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif; font-size:16px; line-height:1.6; }
+ 
+/* ── 공부 모드 오버라이드 ── */
+body.study-mode {
+  --bg: #0f172a; --surface: #1e2d45; --border: rgba(255,255,255,0.1); --border-h: rgba(255,255,255,0.22);
+  --text: #e2e8f0; --muted: #94a3b8; --hint-c: #475569;
+  --accent: #60a5fa; --accent-bg: #1e3a5f;
+  --ok: #4ade80; --ok-bg: #052e16; --ok-border: #166534;
+  --ng: #f87171; --ng-bg: #2d1010; --ng-border: #7f1d1d;
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --mode-btn-bg: #f5f5f4; --mode-btn-text: #0f172a;
+}
+ 
+html, body { min-height:100%; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif; font-size:16px; line-height:1.6; transition: background 0.4s, color 0.3s; }
 #app { max-width:660px; margin:0 auto; padding:2rem 1.25rem 5rem; position:relative; }
 .screen { display:none; }
 .screen.active { display:block; }
  
-/* 기어 */
-.gear { position:absolute; top:2rem; right:1.25rem; cursor:pointer; padding:5px; color:var(--muted); transition:color .15s,transform .3s; }
-.gear:hover { color:var(--text); transform:rotate(60deg); }
-.gear svg { width:24px; height:24px; fill:currentColor; }
+/* 모드 전환 버튼 - 홈 상단 배너 */
+.mode-toggle-wrap { display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-s); padding:.65rem 1rem; margin-bottom:1.25rem; cursor:pointer; transition:background .15s, border-color .15s; box-shadow:var(--shadow); }
+.mode-toggle-wrap:hover { border-color:var(--border-h); }
+.mode-toggle-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.mode-toggle-icon.exam-icon { background:#eef4ff; }
+.mode-toggle-icon.study-icon { background:#1e3a5f; display:none; }
+body.study-mode .mode-toggle-icon.exam-icon { display:none; }
+body.study-mode .mode-toggle-icon.study-icon { display:flex; }
+.mode-toggle-info { flex:1; }
+.mode-toggle-cur { font-size:13px; font-weight:700; color:var(--text); }
+.mode-toggle-desc { font-size:12px; color:var(--muted); margin-top:1px; }
+.mode-toggle-arrow { font-size:13px; color:var(--muted); }
  
 /* 모달 */
-.overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:200; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:200; }
 .overlay.on { display:flex; }
-.modal { background:var(--surface); border-radius:var(--radius); padding:1.75rem; width:90%; max-width:320px; border:1px solid var(--border); box-shadow:0 16px 40px rgba(0,0,0,.18); }
+.modal { background:var(--surface); border-radius:var(--radius); padding:1.75rem; width:90%; max-width:320px; border:1px solid var(--border); box-shadow:0 16px 40px rgba(0,0,0,.3); }
 .modal h3 { font-size:16px; font-weight:700; text-align:center; margin-bottom:1.2rem; }
 .mbtn { width:100%; padding:.8rem; border-radius:var(--radius-s); border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:14px; font-weight:500; cursor:pointer; margin-bottom:.5rem; transition:background .12s; }
 .mbtn:hover { background:var(--bg); }
 .mbtn.red { background:var(--ng); color:#fff; border:none; }
 .mbtn.cancel { border:none; color:var(--muted); background:transparent; font-size:13px; }
  
-/* 토스트 */
-.toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(20px); background:#222; color:#fff; padding:.6rem 1.2rem; border-radius:99px; font-size:13px; font-weight:500; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
+/* 기어 */
+.gear { position:absolute; top:2rem; right:1.25rem; cursor:pointer; padding:5px; color:var(--muted); transition:color .15s,transform .3s; }
+.gear:hover { color:var(--text); transform:rotate(60deg); }
+.gear svg { width:22px; height:22px; fill:currentColor; }
+ 
+/* 토스트 - 모바일 포함 잘 보이게 */
+.toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(30px); background:#1a1a1a; color:#fff; padding:.85rem 1.75rem; border-radius:12px; font-size:15px; font-weight:600; opacity:0; transition:opacity .25s,transform .25s; pointer-events:none; z-index:300; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,.35); max-width:90vw; text-align:center; }
 .toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
  
 /* 홈 */
-.logo { width:48px; height:48px; background:var(--accent); border-radius:13px; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; box-shadow:0 4px 12px rgba(58,134,255,.3); }
+.logo { width:48px; height:48px; background:var(--accent); border-radius:13px; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; box-shadow:0 4px 12px rgba(58,134,255,.3); transition:background 0.3s; }
 .logo svg { width:26px; height:26px; fill:#fff; }
-h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem; }
-.sub { font-size:14px; color:var(--muted); margin-bottom:1.75rem; }
+h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:7rem; }
+.sub { font-size:14px; color:var(--muted); margin-bottom:.75rem; }
+.mode-badge { display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; margin-bottom:1.5rem; letter-spacing:.04em; }
+.mode-badge.exam-badge { background:var(--accent-bg); color:var(--accent); }
+.mode-badge.study-badge { background:#1e3a5f; color:#60a5fa; }
+body.study-mode .mode-badge.exam-badge { display:none; }
+body:not(.study-mode) .mode-badge.study-badge { display:none; }
+ 
 .slabel { font-size:12px; font-weight:600; color:var(--hint-c); letter-spacing:.06em; text-transform:uppercase; margin-bottom:.7rem; }
 .set-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:11px; margin-bottom:1.75rem; }
 .set-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:1.2rem; cursor:pointer; transition:border-color .15s,background .15s; user-select:none; box-shadow:var(--shadow); }
@@ -89,12 +124,20 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 @keyframes cpop { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
  
 /* 카드 */
-.big-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:2.25rem 2rem; margin-bottom:1.25rem; min-height:160px; display:flex; align-items:center; box-shadow:var(--shadow); transition:border-color .25s,box-shadow .25s; }
-.big-card.ok-flash { border-color:var(--ok); box-shadow:0 0 0 3px rgba(46,125,50,.12); }
-.big-card.ng-flash { border-color:var(--ng); box-shadow:0 0 0 3px rgba(198,40,40,.12); }
-.card-text { font-size:18px; font-weight:500; line-height:1.85; color:var(--text); width:100%; word-break:keep-all; }
+.big-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:2rem 2rem; margin-bottom:1.25rem; min-height:140px; display:flex; align-items:flex-start; box-shadow:var(--shadow); transition:border-color .25s,box-shadow .25s,background 0.3s; }
+.big-card.ok-flash { border-color:var(--ok); box-shadow:0 0 0 3px rgba(46,125,50,.15); }
+.big-card.ng-flash { border-color:var(--ng); box-shadow:0 0 0 3px rgba(198,40,40,.15); }
+.card-inner { width:100%; }
+.card-text { font-size:17px; font-weight:500; line-height:1.85; color:var(--text); word-break:keep-all; }
 .card-text b { font-weight:800; }
-.blank-mark { color:var(--accent); font-weight:700; letter-spacing:.02em; font-family:monospace; }
+ 
+/* 공부 모드 전용 - 카드 추가 정보 */
+.card-detail { display:none; margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--border); }
+body.study-mode .card-detail { display:block; }
+.card-detail-label { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.5rem; }
+.card-detail-text { font-size:14px; color:var(--muted); line-height:1.75; word-break:keep-all; }
+.card-hint-box { margin-top:.85rem; background:var(--accent-bg); border-left:3px solid var(--accent); border-radius:0 var(--radius-s) var(--radius-s) 0; padding:.65rem 1rem; font-size:13px; color:var(--text); line-height:1.7; display:none; }
+.card-hint-box.has-hint { display:block; }
  
 /* 학습 */
 .nav-row { display:flex; gap:9px; }
@@ -106,7 +149,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
  
 /* 문제 풀기 */
 .hint-box { font-size:14px; font-weight:600; letter-spacing:.1em; color:#e67e22; background:#fdf5e6; padding:8px 14px; border-radius:var(--radius-s); border-left:4px solid #e67e22; display:none; margin-bottom:10px; }
-@media(prefers-color-scheme:dark){ .hint-box{background:#2a1a06;color:#f4a72a;border-left-color:#f4a72a;} }
+body.study-mode .hint-box { background:#2a1a06; color:#f4a72a; border-left-color:#f4a72a; }
 .inp-wrap { display:flex; gap:8px; margin-bottom:.85rem; }
 .ans-inp { flex:1; padding:.8rem 1rem; border:1.5px solid var(--border); border-radius:var(--radius-s); font-size:16px; background:var(--surface); color:var(--text); outline:none; transition:border-color .15s; }
 .ans-inp:focus { border-color:var(--accent); }
@@ -114,7 +157,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 .ans-inp.ok { border-color:var(--ok); background:var(--ok-bg); }
 .ans-inp.ng { border-color:var(--ng); background:var(--ng-bg); }
 .qbtns { display:flex; gap:8px; margin-bottom:.85rem; }
-.qbtn { flex:1; padding:.78rem; border-radius:var(--radius-s); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text); transition:background .12s,opacity .15s; }
+.qbtn { flex:1; padding:.78rem; border-radius:var(--radius-s); font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text); transition:background .12s; }
 .qbtn:hover { background:var(--bg); }
 .qbtn.hint-btn { border-color:#e67e22; color:#e67e22; }
 .qbtn.reveal-btn { border-color:var(--muted); color:var(--muted); }
@@ -162,7 +205,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 @media(max-width:440px){
   #app{padding:1.5rem 1rem 4rem;}
   .score-big{font-size:48px;}
-  .big-card{padding:1.75rem 1.25rem;min-height:140px;}
+  .big-card{padding:1.5rem 1.25rem;}
   .card-text{font-size:16px;}
 }
 </style>
@@ -170,7 +213,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 <body>
 <div id="app">
  
-<!-- 기어 버튼 -->
+<!-- 기어 -->
 <div class="gear" onclick="openModal()">
   <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
 </div>
@@ -193,17 +236,29 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
   <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 2a8 8 0 100 16A8 8 0 0012 4zm-1 3h2v6h-2V7zm0 8h2v2h-2v-2z"/></svg></div>
   <h1>프로그래밍 기초 학습</h1>
   <p class="sub">세트를 선택한 뒤 학습하거나 문제를 푸세요.</p>
+ 
+  <!-- 모드 전환 배너 -->
+  <div class="mode-toggle-wrap" onclick="toggleMode()">
+    <div class="mode-toggle-icon exam-icon">⚡</div>
+    <div class="mode-toggle-icon study-icon">📖</div>
+    <div class="mode-toggle-info">
+      <div class="mode-toggle-cur" id="mode-cur-text">현재: 시험 모드</div>
+      <div class="mode-toggle-desc" id="mode-desc-text">빠른 암기용 · 40문제 단답형 → 탭하면 공부 모드로 전환</div>
+    </div>
+    <div class="mode-toggle-arrow">⇄</div>
+  </div>
+ 
   <p class="slabel">문제 세트</p>
   <div class="set-grid">
     <div class="set-card" data-set="0" onclick="toggleSet(0)">
       <div class="scheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="sname">프로그램 기초</div>
-      <div class="scount">40문제 · 단답형</div>
+      <div class="scount" id="s0-count">40문제 · 단답형</div>
     </div>
     <div class="set-card" data-set="1" onclick="toggleSet(1)">
       <div class="scheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="sname">능력 단위 9개</div>
-      <div class="scount">9문제 · 빈칸 채우기</div>
+      <div class="scount">9문제 · 단답형</div>
     </div>
   </div>
   <div class="action-row">
@@ -215,13 +270,20 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 <!-- ══ 학습 ══ -->
 <div id="study" class="screen">
   <div class="topbar">
-    <span class="prog-lbl" id="st-prog">1 / 40</span>
+    <span class="prog-lbl" id="st-prog">1 / 50</span>
     <span class="cat-badge" id="st-cat"></span>
   </div>
   <div class="prog-track"><div class="prog-fill" id="st-bar" style="width:0%"></div></div>
   <p class="slabel">📖 문제와 정답 함께 보기</p>
   <div class="big-card">
-    <div class="card-text" id="st-text"></div>
+    <div class="card-inner">
+      <div class="card-text" id="st-text"></div>
+      <div class="card-detail" id="st-detail">
+        <div class="card-detail-label">상세 설명</div>
+        <div class="card-detail-text" id="st-detail-text"></div>
+        <div class="card-hint-box" id="st-hint-box"></div>
+      </div>
+    </div>
   </div>
   <div class="nav-row">
     <button class="nbtn" id="st-prev" onclick="moveStudy(-1)" disabled>← 이전</button>
@@ -232,7 +294,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
 <!-- ══ 문제 풀기 ══ -->
 <div id="exam" class="screen">
   <div class="topbar">
-    <span class="prog-lbl" id="ex-prog">1 / 49</span>
+    <span class="prog-lbl" id="ex-prog">1 / 50</span>
     <span class="live-rate" id="ex-rate">정답률 —</span>
     <span class="cat-badge" id="ex-cat"></span>
   </div>
@@ -240,7 +302,9 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
   <div class="combo" id="combo"></div>
   <p class="slabel">✏️ 빈칸에 들어갈 말을 입력하세요</p>
   <div class="big-card" id="ex-card">
-    <div class="card-text" id="ex-text"></div>
+    <div class="card-inner">
+      <div class="card-text" id="ex-text"></div>
+    </div>
   </div>
   <div class="hint-box" id="hint-box"></div>
   <div class="inp-wrap">
@@ -251,9 +315,7 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
     <button class="qbtn reveal-btn" onclick="revealAnswer()">👁 정답 보기</button>
     <button class="qbtn submit-btn" onclick="check()">확인 (Enter)</button>
   </div>
-  <div class="feedback" id="fb">
-    <span id="fb-text"></span>
-  </div>
+  <div class="feedback" id="fb"><span id="fb-text"></span></div>
   <button class="next-btn" id="next-btn" onclick="nextQ()">다음 문제 →</button>
 </div>
  
@@ -278,8 +340,8 @@ h1 { font-size:23px; font-weight:700; margin-bottom:.35rem; padding-right:2.5rem
  
 </div>
 <script>
-/* ─── 데이터 ─── */
-const SET0 = [
+/* ─── 시험 모드 데이터 (50문제 단답형) ─── */
+const EXAM_SET0 = [
   {cat:"프로그램 기초", q:"프로그램 실행의 시작점이 되는 함수는?", a:"main 함수"},
   {cat:"프로그램 기초", q:"값을 저장하기 위해 사용하는 메모리 공간은?", a:"변수"},
   {cat:"프로그램 기초", q:"변경되지 않는 값을 무엇이라 하는가?", a:"상수"},
@@ -322,8 +384,7 @@ const SET0 = [
   {cat:"실행 환경", q:"프로그램 실행 전에 코드를 기계어로 변환하는 과정은?", a:"컴파일"},
 ];
  
-// 능력 단위: keywords = 굵게 표시할 단어 3개, 문제 풀 때 그 중 1개 랜덤 빈칸
-const SET1 = [
+const EXAM_SET1 = [
   {cat:"능력 단위", q:"코드 작성을 위한 에디터, Git 등 개발에 필요한 소프트웨어와 환경을 PC에 설치하고 세팅하는 능력은?", a:"개발자 환경 구축"},
   {cat:"능력 단위", q:"운영체제, 네트워크 통신 원리, 데이터베이스 등 IT 인프라 전반의 기초 배경지식을 다루는 능력은?", a:"응용 SW 기초 기술 활용"},
   {cat:"능력 단위", q:"Java, Python 등 프로그래밍 언어의 기본 문법과 객체지향 개념을 이해하고 코드를 작성하는 능력은?", a:"프로그래밍 언어 활용"},
@@ -335,15 +396,81 @@ const SET1 = [
   {cat:"능력 단위", q:"완성된 코드를 빌드하여 운영 서버에 업로드하고 서비스가 구동되도록 만드는 능력은?", a:"애플리케이션 배포"},
 ];
  
+/* ─── 공부 모드 데이터 (50문제 상세 설명 포함) ─── */
+const STUDY_SET0 = [
+  {cat:"프로그램 기초", q:"운영체제가 프로그램을 실행할 때 가장 먼저 찾아내어 실행하는 구간으로, 모든 프로그램의 실행 시작점이 되는 핵심 함수는 무엇인가?", a:"main 함수", detail:"운영체제가 프로그램을 실행할 때 가장 먼저 찾아 실행하는 함수입니다. 모든 프로그램의 진입점(Entry Point)으로, 여기서부터 코드가 순서대로 실행됩니다. C, Java, Python 등 대부분의 언어에서 이 개념이 존재합니다."},
+  {cat:"프로그램 기초", q:"프로그램을 실행하는 동안 컴퓨터 메모리(RAM)에 데이터를 저장하기 위해 할당받는 공간으로, 필요에 따라 저장된 값이 언제든지 바뀔 수 있는 이 공간의 이름은 무엇인가?", a:"변수", detail:"메모리(RAM)에 데이터를 저장하기 위해 이름을 붙인 공간입니다. '변하는 수'라는 뜻으로, 프로그램 실행 중 언제든지 값을 읽거나 바꿀 수 있습니다. 예: int age = 20; 에서 age가 변수입니다."},
+  {cat:"프로그램 기초", q:"프로그램이 실행되는 동안 값이 처음 지정되면 절대로 변경되지 않는 고정된 값을 무엇이라 하는가?", a:"상수", detail:"한 번 값이 정해지면 프로그램이 끝날 때까지 절대 변경되지 않는 값입니다. 변수와 달리 값을 보호해야 할 때 사용합니다. 예: final int MAX = 100; (Java), const int MAX = 100; (C)"},
+  {cat:"프로그램 기초", q:"더하기(+), 빼기(-), 곱하기(*)와 같이 컴퓨터에게 데이터의 가공이나 계산(산술, 비교, 논리 등)을 지시하는 기호를 무엇이라 하는가?", a:"연산자", detail:"데이터를 계산하거나 비교하는 데 사용하는 기호입니다. 산술 연산자(+,-,*,/), 비교 연산자(==,!=,>,<), 논리 연산자(&&,||,!) 등이 있습니다."},
+  {cat:"프로그램 기초", q:"코드가 위에서 아래로 순차적으로만 실행되지 않도록, 특정 조건이나 상황에 따라 실행 순서를 바꾸거나 반복하도록 제어하는 구조는 무엇인가?", a:"제어문", detail:"프로그램의 실행 흐름을 제어하는 문장의 총칭입니다. 조건문(if, switch)과 반복문(for, while)이 모두 제어문에 포함됩니다. 제어문이 없으면 코드는 항상 위에서 아래로만 실행됩니다."},
+  {cat:"프로그램 기초", q:"제어문의 한 종류로, 제시된 조건식이 참(True)인지 거짓(False)인지에 따라 프로그램의 실행 경로를 여러 갈래로 나누는 문장은 무엇인가?", a:"조건문", detail:"if-else, switch 등이 대표적입니다. 조건이 참이면 A 코드를, 거짓이면 B 코드를 실행하는 식으로 분기를 만듭니다. 예: if (score >= 60) { 합격 } else { 불합격 }"},
+  {cat:"프로그램 기초", q:"제어문의 한 종류로, 정해진 횟수만큼 또는 특정 조건이 만족되는 동안 동일한 코드 블록을 여러 번 반복해서 수행하는 문장은 무엇인가?", a:"반복문", detail:"for, while, do-while 등이 있습니다. 같은 작업을 여러 번 해야 할 때 사용합니다. 예: for(int i=0; i<10; i++) { 출력 } → 10번 반복 출력"},
+  {cat:"프로그램 기초", q:"키보드, 마우스, 파일 또는 네트워크 등 외부로부터 데이터를 프로그램 내부로 받아들이는 기능을 무엇이라 하는가?", a:"입력", detail:"외부 세계(사용자, 파일, 네트워크)로부터 데이터를 받아오는 것입니다. 컴퓨터 처리 과정의 첫 번째 단계(입력→처리→출력)에 해당합니다. 예: 키보드로 이름 입력, 파일에서 데이터 읽기"},
+  {cat:"프로그램 기초", q:"프로그램이 계산하거나 처리한 최종 결과를 모니터 화면에 나오게 하거나 파일에 저장하여 사용자에게 보여주는 기능을 무엇이라 하는가?", a:"출력", detail:"처리된 결과를 외부로 내보내는 것입니다. 처리 과정의 마지막 단계(입력→처리→출력)에 해당합니다. 예: 화면에 결과 표시, 파일에 저장, 프린터 출력"},
+  {cat:"프로그램 기초", q:"프로그램이 실행되는 도중에 잘못된 연산이나 예상치 못한 상황으로 인해 정상적인 진행이 불가능하고 멈추게 되는 현상을 무엇이라 하는가?", a:"에러", detail:"프로그램이 예상치 못한 상황을 만나 비정상 종료되는 현상입니다. 문법 오류(실행 전), 런타임 오류(실행 중), 논리 오류(결과가 이상함)로 나뉩니다. '예외(Exception)'라고도 합니다."},
+  {cat:"자료형", q:"컴퓨터가 데이터를 처리할 때, 소수점이 없는 정수 형태의 숫자(예: -5, 0, 100)를 저장하기 위해 사용하는 대표적인 자료형은 무엇인가?", a:"int", detail:"Integer(정수)의 약자로, 소수점 없는 숫자를 저장합니다. 일반적으로 32비트(약 ±21억)를 사용합니다. 더 큰 정수가 필요하면 long을 사용합니다. 예: int age = 20; int count = -5;"},
+  {cat:"자료형", q:"컴퓨터가 데이터를 처리할 때, 소수점이 포함된 실수 형태의 숫자(예: 3.14, -0.5)를 표현하기 위해 사용하는 자료형은 무엇인가?", a:"float", detail:"소수점이 있는 실수를 저장합니다. 32비트 부동소수점 방식을 사용합니다. 더 정밀한 계산이 필요하면 double(64비트)을 사용합니다. 예: float pi = 3.14f; double precise = 3.14159265;", hint:"float(실수형) vs double: float는 약 7자리, double은 약 15자리 정밀도를 가집니다."},
+  {cat:"자료형", q:"논리적인 연산 결과나 상태를 표현하기 위해, 오직 참(True) 또는 거짓(False)이라는 두 가지 값만 가질 수 있는 자료형은 무엇인가?", a:"boolean", detail:"참(true) 또는 거짓(false) 두 가지 값만 가집니다. 조건문과 함께 자주 사용됩니다. 예: boolean isLoggedIn = true; if (isLoggedIn) { 홈 화면 표시 }"},
+  {cat:"자료형", q:"연속된 메모리 공간에 동일한 자료형의 데이터들을 순서대로 나열하여, 하나의 변수 이름과 인덱스(번호)로 묶어서 관리하는 자료구조는 무엇인가?", a:"배열", detail:"같은 자료형의 데이터를 연속된 메모리에 저장하는 구조입니다. 인덱스(0부터 시작)로 각 요소에 접근합니다. 크기가 고정되어 있어 한 번 만들면 늘리거나 줄일 수 없습니다. 예: int[] scores = {90, 85, 70};"},
+  {cat:"자료형", q:"C언어 등에서 사용되는 개념으로, 배열과 달리 서로 다른 자료형(정수, 실수, 문자 등)의 데이터들을 하나로 묶어서 사용자가 새롭게 정의한 사용자 정의 자료형은 무엇인가?", a:"구조체", detail:"서로 다른 자료형을 하나로 묶는 사용자 정의 자료형입니다. C언어에서 주로 사용하며, Java/Python에서는 클래스가 같은 역할을 합니다. 예: struct Student { char name[20]; int age; float score; };"},
+  {cat:"함수/모듈", q:"독립적으로 특정 기능을 수행하도록 설계된 코드의 묶음으로, 필요할 때마다 이름을 불러 실행(호출)할 수 있어 코드의 재사용성을 높여주는 것은 무엇인가?", a:"함수", detail:"특정 기능을 수행하는 코드를 묶어서 이름을 붙인 것입니다. 한 번 만들면 여러 곳에서 재사용할 수 있어 코드 중복을 줄입니다. 예: int add(int a, int b) { return a + b; } → add(3, 5)로 호출"},
+  {cat:"함수/모듈", q:"함수를 호출할 때, 함수 내부에서 처리할 수 있도록 외부에서 함수에게 넘겨주는 입력 데이터 값을 무엇이라 하는가?", a:"인자", detail:"함수를 호출할 때 전달하는 실제 값입니다. '인수', '매개변수(파라미터)'라고도 합니다. 예: add(3, 5)에서 3과 5가 인자입니다. 함수 정의에서 (int a, int b)는 매개변수라고 구분하기도 합니다."},
+  {cat:"함수/모듈", q:"함수가 모든 연산이나 작업을 마친 후, 자신을 호출했던 원래의 코드 위치로 되돌려주는 최종 결과 값을 무엇이라 하는가?", a:"반환값", detail:"함수가 작업을 마치고 호출한 곳으로 돌려주는 결과값입니다. return 키워드로 반환합니다. 예: int add(int a, int b) { return a + b; } → add(3,5)를 호출하면 8이 반환값으로 돌아옵니다. '리턴값'이라고도 합니다."},
+  {cat:"함수/모듈", q:"거대하고 복잡한 프로그램을 논리적이고 독립적인 작은 기능 단위(파일)로 나누어 설계함으로써, 유지보수와 관리를 쉽게 만드는 개발 방식을 무엇이라 하는가?", a:"모듈화", detail:"복잡한 프로그램을 독립적인 기능 단위(모듈)로 분리하는 방식입니다. 각 모듈은 독립적이어서 한 부분을 수정해도 다른 부분에 영향을 최소화합니다. 유지보수성과 재사용성이 높아집니다."},
+  {cat:"함수/모듈", q:"동일한 이름을 가진 함수라 할지라도, 전달받는 매개변수의 타입이나 개수를 다르게 하여 여러 형태로 정의하고 사용할 수 있게 하는 객체지향 기법은 무엇인가?", a:"오버로딩", detail:"같은 이름의 함수를 매개변수만 다르게 하여 여러 개 정의하는 기법입니다. 예: print(int n), print(String s), print(double d) → 같은 이름 print로 다양한 타입 처리 가능. 오버라이딩과 혼동 주의!", hint:"오버로딩(Over-loading): 하나의 이름에 여러 기능을 '과적(Loading)'하는 것. 매개변수가 달라야 합니다."},
+  {cat:"오류/디버깅", q:"프로그래밍 언어가 정한 규칙과 문법을 지키지 않아서 발생하며, 컴파일러나 인터프리터가 코드를 해석하는 과정에서 발견되어 실행조차 되지 않는 오류는 무엇인가?", a:"문법 오류", detail:"코드를 실행하기 전 컴파일 단계에서 발견됩니다. 오타, 괄호 누락, 세미콜론 빠짐 등이 원인입니다. 영어로 Syntax Error라고 합니다. 가장 찾기 쉬운 오류로, IDE가 빨간 줄로 표시해줍니다."},
+  {cat:"오류/디버깅", q:"문법은 완벽하여 프로그램이 정상적으로 실행되었으나, 실행 도중 0으로 나누기나 잘못된 메모리 접근 등 예측하지 못한 상황을 만나 강제 종료되는 오류는 무엇인가?", a:"런타임 오류", detail:"실행 중에 발생하는 오류입니다. 문법은 맞지만 실행하다가 불가능한 상황을 만납니다. 0으로 나누기(ArithmeticException), 배열 범위 초과(ArrayIndexOutOfBoundsException), null 참조 등이 대표적입니다."},
+  {cat:"오류/디버깅", q:"프로그램이 에러 없이 정상적으로 실행되고 끝났지만, 개발자의 계산 착오나 설계 미스로 인해 원하는 결과와 전혀 다른 엉뚱한 결과가 나오는 오류는 무엇인가?", a:"논리 오류", detail:"프로그램이 오류 없이 실행되지만 결과가 잘못 나옵니다. 개발자의 알고리즘 실수가 원인입니다. 예: 평균을 구할 때 합계를 학생 수가 아닌 다른 값으로 나누는 경우. Semantic Error, 버그라고도 합니다. 가장 찾기 어려운 오류입니다."},
+  {cat:"오류/디버깅", q:"프로그램 소스 코드에 숨어 있는 오류(버그)의 원인을 찾아내고, 이를 올바르게 수정하여 정상 작동하도록 만드는 일련의 과정을 무엇이라 하는가?", a:"디버깅", detail:"코드의 버그(오류)를 찾아 제거하는 과정입니다. Debug = De(제거) + Bug(벌레). 초기 컴퓨터에서 실제 벌레가 오작동을 일으킨 데서 유래했습니다. 디버거 도구, 로그 출력, 코드 리뷰 등의 방법을 사용합니다."},
+  {cat:"오류/디버깅", q:"개발자가 프로그램 소스 코드를 한 줄씩 실행해 보면서 메모리에 담긴 변수 값을 실시간으로 추적하고 오류를 찾을 수 있도록 도와주는 소프트웨어 도구는 무엇인가?", a:"디버거", detail:"디버깅을 도와주는 소프트웨어 도구입니다. 코드를 한 줄씩 실행(Step by Step)하거나, 특정 지점에서 멈추게 하는 중단점(Breakpoint)을 설정할 수 있습니다. VSCode, IntelliJ 등 대부분의 IDE에 내장되어 있습니다."},
+  {cat:"품질/개발", q:"개발된 소프트웨어가 사용자의 요구사항을 충족하는지, 그리고 프로그램이 의도된 대로 결함 없이 정확하게 동작하는지 검증하고 확인하는 과정을 무엇이라 하는가?", a:"테스트", detail:"소프트웨어가 올바르게 동작하는지 확인하는 과정입니다. 단위 테스트(함수 단위), 통합 테스트(모듈 간), 시스템 테스트(전체) 등 단계별로 진행합니다. 배포 전 필수 과정입니다."},
+  {cat:"품질/개발", q:"작성된 소스 코드를 다른 개발자나 미래의 자신이 쉽게 이해할 수 있도록, 프로그램의 실행에는 영향을 주지 않으면서 코드의 의미를 설명해 놓은 메모를 무엇이라 하는가?", a:"주석", detail:"코드 실행에는 영향을 주지 않는 설명 메모입니다. // 한 줄 주석, /* 여러 줄 주석 */ 형태로 작성합니다. '좋은 코드는 주석이 필요 없다'는 말도 있지만, 복잡한 로직에는 주석이 필수입니다."},
+  {cat:"품질/개발", q:"소스 코드의 가독성을 높이고 일관성을 유지하기 위해, 개발자들 사이에서 약속한 명명 규칙, 들여쓰기 공간, 괄호 위치 등의 규칙을 맞추는 행위를 무엇이라 하는가?", a:"코딩 컨벤션", detail:"팀 내에서 약속한 코드 작성 규칙입니다. 변수명은 camelCase로, 들여쓰기는 4칸 등을 약속합니다. 코드 스타일을 통일하면 협업이 쉬워집니다. 스타일 가이드, 코딩 표준이라고도 합니다."},
+  {cat:"품질/개발", q:"프로그램이 소비하는 컴퓨터의 메모리를 줄이거나 실행 속도를 단축시켜, 시스템 환경에서 최적의 효율과 성능을 발휘하도록 코드를 개선하는 작업을 무엇이라 하는가?", a:"최적화", detail:"프로그램의 속도나 메모리 사용량을 개선하는 작업입니다. 알고리즘 개선, 불필요한 반복 제거, 메모리 효율화 등의 방법을 사용합니다. 단, '섣부른 최적화는 만악의 근원'이라는 말처럼 기능 구현 후에 진행하는 것이 좋습니다."},
+  {cat:"품질/개발", q:"개발 및 테스트가 완료된 최종 소프트웨어를 사용자가 실제 환경에서 사용할 수 있도록 설치 파일로 만들거나 서버에 업로드하여 제공하는 과정을 무엇이라 하는가?", a:"배포", detail:"완성된 소프트웨어를 실제 사용자에게 제공하는 과정입니다. 웹 서비스는 서버에 업로드, 앱은 앱스토어에 제출하는 방식입니다. CI/CD 파이프라인을 통해 자동화하는 경우가 많습니다."},
+  {cat:"자료구조", q:"데이터를 순서대로 늘어놓는 구조로, 한 번 생성하면 메모리 내에서 그 크기를 마음대로 늘리거나 줄일 수 없는 정적 자료구조는 무엇인가?", a:"배열", detail:"같은 자료형의 데이터를 연속된 메모리에 고정 크기로 저장합니다. 인덱스로 빠르게 접근(O(1))할 수 있지만, 크기가 고정되어 중간 삽입/삭제가 비효율적입니다. 예: int[] arr = new int[5];"},
+  {cat:"자료구조", q:"배열의 한계를 극복하기 위해 데이터의 삽입과 삭제가 자유로우며, 프로그램 실행 중에 필요에 따라 동적으로 크기가 변할 수 있는 자료구조는 무엇인가?", a:"리스트", detail:"크기가 동적으로 변하는 자료구조입니다. 배열과 달리 중간에 요소를 추가하거나 삭제하기 쉽습니다. Java의 ArrayList, Python의 list가 대표적입니다. 동적 배열이라고도 합니다."},
+  {cat:"객체지향", q:"객체지향 프로그래밍에서 현실 세계의 사물을 프로그램 속에 구현하기 위해 사용되는 설계도(틀)에 해당하며, 객체가 가져야 할 데이터(속성)와 행위(메서드)를 정의해 놓은 이 기본 구조를 무엇이라 하는가?", a:"클래스", detail:"객체를 만들기 위한 설계도(틀)입니다. 붕어빵 틀에 비유할 수 있습니다. 클래스는 메모리를 차지하지 않는 개념적 설계이며, 이를 바탕으로 실제 객체(인스턴스)를 생성합니다. 예: class Car { String brand; void drive(){} }"},
+  {cat:"객체지향", q:"객체지향 프로그래밍에서 정의된 클래스(설계도)를 바탕으로, 프로그램이 실행될 때 컴퓨터 메모리(Heap 영역)에 실제로 할당되어 고유한 상태와 행위를 갖게 된 실체를 무엇이라 하는가?", a:"인스턴스", detail:"클래스(설계도)로 만들어진 실제 객체입니다. 붕어빵 틀(클래스)로 찍어낸 실제 붕어빵(인스턴스)에 비유합니다. new 키워드로 생성하며 힙(Heap) 메모리에 저장됩니다. 예: Car myCar = new Car(); → myCar가 인스턴스", hint:"클래스 = 붕어빵 틀 (설계, 메모리 차지 않음) / 인스턴스 = 실제 붕어빵 (메모리에 실제 존재)"},
+  {cat:"객체지향", q:"객체지향 프로그래밍에서 객체가 가지고 있는 고유한 데이터나 상태, 특징을 나타내는 요소로, 일반적인 프로그래밍의 변수와 유사하게 클래스 내부에 선언되어 값을 저장하는 역할을 하는 것을 무엇이라 하는가?", a:"속성", detail:"클래스 내부에 선언된 변수로, 객체의 상태나 특성을 저장합니다. 필드, 멤버변수라고도 합니다. 예: 자동차 클래스의 속성 → brand(브랜드), speed(속도), fuelLevel(연료량). 각 인스턴스마다 속성값이 다를 수 있습니다."},
+  {cat:"객체지향", q:"객체지향 프로그래밍에서 특정 객체가 수행할 수 있는 행동이나 기능을 정의한 것으로, 클래스 내부에 정의되어 해당 객체의 속성(데이터)을 다루거나 제어하는 역할을 하는 이 구조는 무엇인가?", a:"메서드", detail:"클래스 내부에 정의된 함수입니다. 객체의 행동을 정의합니다. 멤버함수라고도 합니다. 예: 자동차 클래스의 메서드 → accelerate(가속), brake(브레이크), startEngine(시동). 일반 함수와 달리 반드시 클래스 안에 있어야 합니다.", hint:"자동차 설계도(클래스) 예시\n속성: 차량번호, 차종, 현재속도, 연료량\n메서드: 가속하기(), 브레이크밟기(), 시동켜기()"},
+  {cat:"객체지향", q:"객체지향 프로그래밍에서 연관된 데이터(속성)와 기능(메서드)을 하나의 단위로 묶고, 외부에 공개할 필요가 없는 상세 구현 내용을 감추어 보호하는 개념은 무엇인가?", a:"캡슐화", detail:"데이터와 기능을 하나로 묶고, 내부 구현을 숨기는 개념입니다. 정보 은닉이라고도 합니다. private 접근 제한자로 외부 접근을 막고, getter/setter 메서드로만 접근하게 합니다. 코드의 안정성과 보안성이 높아집니다."},
+  {cat:"객체지향", q:"이미 잘 만들어진 상위 클래스(부모 클래스)의 모든 속성과 기능을 그대로 물려받아, 하위 클래스(자식 클래스)가 새로운 기능을 추가하거나 확장하여 사용할 수 있게 하는 개념은 무엇인가?", a:"상속", detail:"부모 클래스의 속성과 메서드를 자식 클래스가 물려받는 개념입니다. 코드 재사용성이 높아집니다. extends 키워드를 사용합니다. 예: Animal(부모) → Dog, Cat(자식). 자식은 부모의 기능을 모두 사용하면서 새 기능을 추가할 수 있습니다."},
+  {cat:"객체지향", q:"하나의 기호나 동일한 이름의 메시지가 객체의 실제 성격에 따라 서로 다른 다양한 형태와 기능으로 해석되어 동작할 수 있는 객체지향의 특성은 무엇인가?", a:"다형성", detail:"같은 명령이 객체에 따라 다르게 동작하는 특성입니다. '운전하다'라는 명령이 승용차, 오토바이, 기차에서 모두 다르게 동작하는 것과 같습니다. 오버로딩과 오버라이딩이 다형성을 구현하는 방법입니다.", hint:"다형성 예시: '울다()' 메서드 → Dog.울다()='멍멍', Cat.울다()='야옹', Cow.울다()='음메' → 같은 이름, 다른 동작"},
+  {cat:"객체지향", q:"한 클래스 내부에서 이름이 같은 함수(메서드)를 여러 개 정의하는 기법으로, 매개변수의 타입이나 개수를 다르게 하여 하나의 함수 이름으로 다양한 형태의 입력값을 처리할 수 있도록 하는 객체지향 특징은?", a:"오버로딩", detail:"같은 이름의 메서드를 매개변수만 달리하여 여러 개 정의합니다. 예: print(int n), print(String s), print(double d) → 같은 이름이지만 다른 타입 처리. 컴파일 타임에 어떤 메서드를 호출할지 결정됩니다.", hint:"오버로딩 vs 오버라이딩 구분\n오버로딩: 같은 클래스, 같은 이름, 다른 매개변수 → 메서드 '추가'\n오버라이딩: 부모-자식 관계, 같은 이름, 같은 매개변수 → 메서드 '재정의'"},
+  {cat:"객체지향", q:"상속 관계에 있는 상위 클래스(부모 클래스)가 이미 정의한 메서드를, 하위 클래스(자식 클래스)가 자신의 특징에 맞게 내부 실행 코드를 새롭게 변경하여 재정의하는 기법을 무엇이라 하는가?", a:"오버라이딩", detail:"부모 클래스의 메서드를 자식 클래스에서 재정의하는 기법입니다. 메서드 이름과 매개변수는 동일하지만 내용(구현)을 바꿉니다. @Override 어노테이션으로 명시합니다. 런타임에 어떤 메서드를 호출할지 결정됩니다.", hint:"오버라이딩(Over-riding): 부모가 물려준 메서드 위에 올라타서(Ride) 새 내용으로 '덮어쓰기(Overwrite)'하는 것."},
+  {cat:"협업/개발", q:"소스 코드가 수정될 때마다 변경된 내용, 수정된 날짜, 작성자 등을 기록하여 프로그램의 과거 상태를 저장하고 추적할 수 있도록 관리하는 것은 무엇인가?", a:"버전 관리", detail:"코드 변경 이력을 추적하고 관리하는 시스템입니다. 과거 버전으로 되돌리거나, 누가 언제 무엇을 바꿨는지 확인할 수 있습니다. Git이 현재 가장 많이 사용되는 버전 관리 시스템입니다."},
+  {cat:"협업/개발", q:"리누스 토르발스가 리눅스 커널 개발을 위해 처음 만든 시스템으로, 소스 코드의 변경 이력을 스냅샷 형태로 로컬 컴퓨터에 저장하며, 전 세계 개발자들이 협업 시 사실상의 표준으로 사용하는 대표적인 분산 버전 관리 시스템은?", a:"Git", detail:"현재 세계 표준 버전 관리 시스템입니다. 리누스 토르발스(Linux 창시자)가 2005년에 만들었습니다. 분산형이라 네트워크 없이도 로컬에서 작업 가능합니다. GitHub, GitLab 등과 함께 사용하여 원격 협업을 합니다."},
+  {cat:"협업/개발", q:"Git이나 SVN과 같이 여러 명의 개발자가 하나의 프로젝트를 동시에 개발할 때, 소스 코드의 충돌을 방지하고 변경 이력을 원격으로 통합 관리해 주는 시스템을 무엇이라 하는가?", a:"형상 관리 시스템", detail:"소프트웨어의 변경사항을 체계적으로 추적하고 통제하는 시스템입니다. 버전 관리 시스템(VCS)이라고도 합니다. Git, SVN, Mercurial 등이 있으며, 여러 개발자가 동시에 작업할 때 코드 충돌을 방지합니다."},
+  {cat:"코드 품질", q:"프로그램의 외부적인 기능이나 결과물은 그대로 유지한 채, 내부 소스 코드의 구조를 개선하여 가독성을 높이고 유지보수를 쉽게 만드는 중복 제거 및 구조 개선 작업을 무엇이라 하는가?", a:"리팩토링", detail:"기능은 그대로 두고 코드 내부 구조를 개선하는 작업입니다. 중복 코드 제거, 함수 분리, 변수명 개선 등을 포함합니다. '나쁜 냄새(Code Smell)'를 제거하는 작업이라고도 합니다. 마틴 파울러의 책 'Refactoring'으로 유명해졌습니다."},
+  {cat:"코드 품질", q:"알고리즘이나 프로그램의 제어 흐름, 작업 처리 단계를 시작부터 끝까지 기호와 화살표를 사용하여 시각적으로 구조화하여 표현한 그림은 무엇인가?", a:"순서도", detail:"프로그램의 흐름을 도형과 화살표로 표현한 그림입니다. 시작/끝은 타원, 처리는 직사각형, 조건은 마름모, 화살표로 흐름을 나타냅니다. 플로우차트(Flowchart)라고도 합니다. 코딩 전 로직을 설계할 때 유용합니다."},
+  {cat:"실행 환경", q:"사람이 작성한 고수준의 프로그래밍 언어 소스 코드를 컴퓨터(CPU)가 직접 이해하고 실행할 수 있는 0과 1로 된 기계어로 미리 통째로 번역하는 과정을 무엇이라 하는가?", a:"컴파일", detail:"소스 코드를 기계어로 한 번에 번역하는 과정입니다. 컴파일러가 이 작업을 수행합니다. C, C++, Java 등이 컴파일 언어입니다. 실행 전에 오류를 미리 발견할 수 있고, 실행 속도가 빠릅니다.", hint:"컴파일 vs 인터프리터\n컴파일: 전체를 미리 번역 → 실행 빠름, 오류 미리 발견\n인터프리터: 한 줄씩 번역·실행 → 즉시 실행 가능, 수정 편함"},
+  {cat:"실행 환경", q:"소스 코드를 실행하기 전에 기계어로 한꺼번에 번역하는 컴파일러와 달리, 프로그램을 실행할 때 소스 코드를 한 줄씩 실시간으로 읽어 들여 즉석에서 기계어로 번역하고 즉시 실행하는 방식은?", a:"인터프리터", detail:"소스 코드를 한 줄씩 읽어 바로 실행하는 방식입니다. Python, JavaScript, Ruby가 대표적입니다. 수정 후 바로 실행 가능하여 개발이 편하지만, 컴파일 방식보다 실행 속도가 느립니다."},
+  {cat:"실행 환경", q:"단순히 소스 코드를 기계어로 번역하는 컴파일 과정을 포함하여, 작성된 소스 코드 파일과 각종 자원(Resource)을 하나로 묶고 링크(Link)하여 사용자가 실제로 실행할 수 있는 최종 결과물로 만들어내는 전체적인 변환 과정은?", a:"빌드", detail:"소스 코드를 실행 가능한 최종 산출물로 만드는 전체 과정입니다. 컴파일 → 링크 → 패키징 등의 단계를 포함합니다. 결과물은 .exe(윈도우 실행파일), .jar(Java), .apk(안드로이드 앱) 등입니다. Maven, Gradle, Webpack 등의 빌드 도구를 사용합니다."},
+  {cat:"실행 환경", q:"자바(Java)의 JVM 등에서 주로 사용되는 방식으로, 컴파일과 인터프리터 방식의 장점을 혼합한 기술입니다. 실행 도중 자주 반복되는 코드를 실시간으로 찾아내어 기계어로 번역·캐싱함으로써 실행 속도를 획기적으로 향상시키는 동적 컴파일 기술은?", a:"JIT 컴파일", detail:"Just-In-Time Compilation의 약자입니다. 처음에는 인터프리터처럼 실행하다가, 자주 실행되는 코드를 발견하면 기계어로 컴파일하여 캐싱합니다. Java의 JVM, .NET의 CLR에서 사용합니다. 인터프리터의 유연함과 컴파일의 속도를 모두 취합니다.", hint:"JIT = Just-In-Time (딱 필요한 순간에)\n자주 쓰이는 코드 발견 → 기계어로 변환·저장 → 다음에 바로 사용 → 빠름!"},
+];
+ 
+const STUDY_SET1 = [
+  {cat:"능력 단위", q:"코드를 작성하기 위한 에디터(VSCode, IntelliJ 등), 버전 관리 시스템(Git), 웹 서버 등 프로젝트 수행에 필요한 소프트웨어와 개발 환경을 내 PC에 설치하고 세팅하는 능력은?", a:"개발자 환경 구축", detail:"본격적인 개발에 앞서 작업 공간을 준비하는 과정입니다. 코드 에디터(VSCode, IntelliJ), 버전 관리 시스템(Git), 언어 런타임(Node.js, JDK), 웹 서버(Apache, Nginx) 등을 설치·설정합니다. 개발 환경이 잘 세팅되어야 효율적인 개발이 가능합니다."},
+  {cat:"능력 단위", q:"개발에 필수적인 운영체제(Windows, Linux), 네트워크 통신 원리(TCP/IP, HTTP), 데이터베이스의 기본 개념 등 IT 인프라 전반에 대한 기초 배경지식을 다루는 능력은?", a:"응용 SW 기초 기술 활용", detail:"개발자가 알아야 할 IT 인프라 기초 지식을 다룹니다. 운영체제(프로세스, 메모리 관리), 네트워크(TCP/IP, HTTP/HTTPS, REST API), 데이터베이스(RDBMS 기초, SQL)에 대한 이해가 포함됩니다."},
+  {cat:"능력 단위", q:"Java, Python, C 등 주력 프로그래밍 언어의 기본 문법(변수, 제어문, 배열 등)을 익히고, 객체지향과 같은 핵심 프로그래밍 개념을 이해하여 코드를 작성하는 능력은?", a:"프로그래밍 언어 활용", detail:"애플리케이션의 핵심 로직을 구현하는 능력입니다. 변수·자료형·연산자·제어문·배열 등 기본 문법을 익히고, 클래스·객체·상속·다형성 등 객체지향 개념을 적용합니다. Java, Python, C/C++ 등 주력 언어 하나를 깊이 학습하는 것이 중요합니다."},
+  {cat:"능력 단위", q:"기초 문법을 넘어 자료구조, 알고리즘, 예외 처리, 스레드(Thread) 등 심화된 프로그래밍 기법을 적용하여 효율적이고 복잡한 소프트웨어 기능을 구현하는 능력은?", a:"프로그래밍 언어 응용", detail:"기초 문법을 넘어 심화 기법을 적용합니다. 스택·큐·트리 등 자료구조, 정렬·탐색 알고리즘, try-catch 예외 처리, 멀티스레드 프로그래밍 등을 다룹니다. 효율적이고 안정적인 소프트웨어를 만들기 위한 필수 역량입니다."},
+  {cat:"능력 단위", q:"관계형 데이터베이스(Oracle, MySQL 등) 시스템을 이해하고, 데이터를 조회, 추가, 수정, 삭제(CRUD)하기 위한 SQL 명령어를 작성하여 애플리케이션과 데이터를 연동하는 능력은?", a:"SQL 활용", detail:"관계형 데이터베이스(RDBMS)와 SQL을 다루는 능력입니다. CRUD(Create·Read·Update·Delete) 작업을 위한 SELECT, INSERT, UPDATE, DELETE 문을 작성합니다. JOIN, 서브쿼리, 인덱스 등 심화 SQL도 포함됩니다. Oracle, MySQL, PostgreSQL 등이 대표적입니다."},
+  {cat:"능력 단위", q:"기획된 UI/UX 설계서를 바탕으로 HTML, CSS, JavaScript 등의 웹 기술을 활용하여 실제 작동하는 웹 페이지나 애플리케이션 화면을 시각적으로 만들어내는 능력은?", a:"화면 구현", detail:"사용자가 직접 보고 상호작용하는 화면을 만드는 능력입니다. HTML(구조), CSS(스타일), JavaScript(동작)의 3요소로 구성됩니다. UI/UX 설계서를 실제 동작하는 화면으로 구현하며, React·Vue 등의 프레임워크를 사용하기도 합니다."},
+  {cat:"능력 단위", q:"만들어진 화면이 사용자의 조작에 맞게 정상적으로 반응하는지, 디자인 시안과 일치하는지, 다양한 브라우저나 기기 환경에서도 깨짐 없이 잘 보이는지를 검증하는 능력은?", a:"UI 테스트", detail:"구현된 화면의 품질을 검증하는 능력입니다. 사용자 조작에 대한 정상 반응 여부, 디자인 시안과의 일치 여부, 크로스 브라우저(Chrome·Safari·Edge·Firefox) 호환성, 반응형 디자인(모바일·태블릿·PC)을 테스트합니다."},
+  {cat:"능력 단위", q:"소프트웨어 내부 로직에 숨어있는 결함(버그)을 찾아내기 위해 단위 테스트와 통합 테스트를 진행하고, 문제를 수정(디버깅)하여 프로그램의 안정성을 높이는 능력은?", a:"애플리케이션 테스트 수행", detail:"소프트웨어의 결함을 찾아 수정하는 능력입니다. 단위 테스트(함수·클래스 단위 검증), 통합 테스트(모듈 간 연동 검증), 시스템 테스트(전체 동작 검증)를 순서대로 진행합니다. JUnit(Java), pytest(Python) 등 테스트 프레임워크를 사용합니다."},
+  {cat:"능력 단위", q:"테스트가 완료된 최종 코드를 실행 가능한 형태로 묶어(빌드), 실제 사용자가 접속할 수 있는 운영 서버에 업로드하고 서비스가 구동되도록 만드는 능력은?", a:"애플리케이션 배포", detail:"완성된 애플리케이션을 실제 사용자에게 서비스하는 능력입니다. 빌드(소스 코드를 실행 파일로 변환) → 서버 업로드 → 서비스 시작 순서로 진행합니다. AWS, GCP, Azure 등 클라우드 서비스나 Docker·Kubernetes를 활용하는 경우가 많습니다."},
+];
+ 
 const ALIASES = {
   "main 함수":["main","main함수","main 함수"],
   "반환값":["반환값","리턴값","return값","리턴 값"],
-  "형상 관리 시스템":["형상 관리 시스템","형상관리시스템","형상관리"],
+  "형상 관리 시스템":["형상 관리 시스템","형상관리시스템","형상관리","버전 관리 시스템","버전관리시스템"],
   "버전 관리":["버전 관리","버전관리"],
-  "코드 정리":["코드 정리","코드정리"],
-  "논리 오류":["논리 오류","논리오류"],
+  "코딩 컨벤션":["코딩 컨벤션","코딩컨벤션","스타일 가이드","코딩 표준"],
+  "논리 오류":["논리 오류","논리오류","시맨틱 오류"],
   "런타임 오류":["런타임 오류","런타임오류"],
-  "문법 오류":["문법 오류","문법오류"],
+  "문법 오류":["문법 오류","문법오류","신택스 오류"],
   "개발자 환경 구축":["개발자 환경 구축","개발자환경구축"],
   "응용 SW 기초 기술 활용":["응용 SW 기초 기술 활용","응용sw기초기술활용","응용 sw 기초 기술 활용"],
   "프로그래밍 언어 활용":["프로그래밍 언어 활용","프로그래밍언어활용"],
@@ -353,246 +480,208 @@ const ALIASES = {
   "UI 테스트":["UI 테스트","ui 테스트","ui테스트"],
   "애플리케이션 테스트 수행":["애플리케이션 테스트 수행","애플리케이션테스트수행","애플리케이션 테스트"],
   "애플리케이션 배포":["애플리케이션 배포","애플리케이션배포"],
+  "JIT 컴파일":["JIT 컴파일","jit 컴파일","jit컴파일","jit"],
+  "Git":["Git","git","깃"],
+  "인스턴스":["인스턴스","객체","instance"],
+  "속성":["속성","필드","멤버변수"],
+  "메서드":["메서드","멤버함수","method"],
 };
  
 /* ─── 상태 ─── */
+let isStudyMode = false;
 let selSets = [], studyQs = [], studyCur = 0;
 let qs = [], cur = 0, okCnt = 0, wrongs = [], answered = false, combo = 0;
  
 /* ─── 유틸 ─── */
-function shuffle(a) {
-  const b = [...a];
-  for (let i = b.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [b[i],b[j]] = [b[j],b[i]];
-  }
-  return b;
-}
-function norm(s) { return s.trim().replace(/\s+/g,'').toLowerCase(); }
-function isOk(u, c) {
-  const list = ALIASES[c] ? ALIASES[c].map(norm) : [norm(c)];
-  return list.includes(norm(u));
-}
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function toast(msg, dur=2200) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('on');
-  setTimeout(() => t.classList.remove('on'), dur);
-}
-function getHint(str) {
-  const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  let r = '';
-  for (let i = 0; i < str.length; i++) {
-    const c = str[i];
-    if (c === ' ') { r += ' '; continue; }
-    const code = c.charCodeAt(0) - 44032;
-    if (code >= 0 && code <= 11172) {
-      // 한글 → 초성
-      r += cho[Math.floor(code / 588)];
-    } else if (/[a-zA-Z0-9]/.test(c)) {
-      // 영문/숫자 → 언더바
-      r += '_';
-    } else {
-      r += c;
-    }
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function norm(s){return s.trim().replace(/\s+/g,'').toLowerCase();}
+function isOk(u,c){const list=ALIASES[c]?ALIASES[c].map(norm):[norm(c)];return list.includes(norm(u));}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),dur);}
+function getHint(str){
+  const cho=["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+  let r='';
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(c===' '){r+=' ';continue;}
+    const code=c.charCodeAt(0)-44032;
+    if(code>=0&&code<=11172){r+=cho[Math.floor(code/588)];}
+    else if(/[a-zA-Z0-9]/.test(c)){r+='_';}
+    else{r+=c;}
   }
   return r;
 }
  
-/* ─── 홈 ─── */
-function toggleSet(i) {
-  const card = document.querySelector(`.set-card[data-set="${i}"]`), idx = selSets.indexOf(i);
-  if (idx === -1) { selSets.push(i); card.classList.add('sel'); }
-  else { selSets.splice(idx, 1); card.classList.remove('sel'); }
-  const ok = selSets.length > 0;
-  document.getElementById('study-btn').disabled = !ok;
-  document.getElementById('exam-btn').disabled = !ok;
+/* ─── 모드 전환 ─── */
+function toggleMode(){
+  isStudyMode = !isStudyMode;
+  const body = document.body;
+  if(isStudyMode){
+    body.classList.add('study-mode');
+    document.getElementById('mode-cur-text').textContent = '현재: 공부 모드';
+    document.getElementById('mode-desc-text').textContent = '깊은 학습용 · 50문제 + 상세 설명 → 탭하면 시험 모드로 전환';
+    document.getElementById('s0-count').textContent = '50문제 · 상세 설명';
+    toast('📖 공부 모드로 전환됐어요', 3000);
+  } else {
+    body.classList.remove('study-mode');
+    document.getElementById('mode-cur-text').textContent = '현재: 시험 모드';
+    document.getElementById('mode-desc-text').textContent = '빠른 암기용 · 40문제 단답형 → 탭하면 공부 모드로 전환';
+    document.getElementById('s0-count').textContent = '40문제 · 단답형';
+    toast('⚡ 시험 모드로 전환됐어요', 3000);
+  }
+  goHome();
 }
-function goHome() {
-  selSets = [];
-  document.querySelectorAll('.set-card').forEach(c => c.classList.remove('sel'));
-  document.getElementById('study-btn').disabled = true;
-  document.getElementById('exam-btn').disabled = true;
+ 
+function getSet0(){ return isStudyMode ? STUDY_SET0 : EXAM_SET0; }
+function getSet1(){ return isStudyMode ? STUDY_SET1 : EXAM_SET1; }
+ 
+/* ─── 홈 ─── */
+function toggleSet(i){
+  const card=document.querySelector(`.set-card[data-set="${i}"]`),idx=selSets.indexOf(i);
+  if(idx===-1){selSets.push(i);card.classList.add('sel');}else{selSets.splice(idx,1);card.classList.remove('sel');}
+  const ok=selSets.length>0;
+  document.getElementById('study-btn').disabled=!ok;
+  document.getElementById('exam-btn').disabled=!ok;
+}
+function goHome(){
+  selSets=[];
+  document.querySelectorAll('.set-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('study-btn').disabled=true;
+  document.getElementById('exam-btn').disabled=true;
   show('home');
 }
  
 /* ─── 모달 ─── */
-function openModal() { document.getElementById('modal').classList.add('on'); }
-function closeModal() { document.getElementById('modal').classList.remove('on'); }
-function exitApp() {
-  closeModal();
-  setTimeout(() => {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#111;color:#555;font-size:15px;font-family:sans-serif">종료되었습니다. 탭을 닫아주세요.</div>';
-  }, 80);
-}
+function openModal(){document.getElementById('modal').classList.add('on');}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function exitApp(){closeModal();setTimeout(()=>{document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#111;color:#555;font-size:15px;font-family:sans-serif">종료되었습니다. 탭을 닫아주세요.</div>';},80);}
  
 /* ─── 학습 ─── */
-function startStudy() {
-  let pool = [];
-  if (selSets.includes(0)) pool = pool.concat(SET0);
-  if (selSets.includes(1)) pool = pool.concat(SET1);
-  studyQs = pool; studyCur = 0;
+function startStudy(){
+  let pool=[];
+  if(selSets.includes(0)) pool=pool.concat(getSet0());
+  if(selSets.includes(1)) pool=pool.concat(getSet1());
+  studyQs=pool; studyCur=0;
   show('study'); loadStudy();
 }
-function loadStudy() {
-  const q = studyQs[studyCur], total = studyQs.length;
-  document.getElementById('st-prog').textContent = `${studyCur+1} / ${total}`;
-  document.getElementById('st-cat').textContent = q.cat;
-  document.getElementById('st-bar').style.width = `${((studyCur+1)/total)*100}%`;
-  const el = document.getElementById('st-text');
-  el.innerHTML = `${q.q}<br><br>정답: <b>${q.a}</b>`;
-  document.getElementById('st-prev').disabled = studyCur === 0;
-  const nxt = document.getElementById('st-next');
-  nxt.textContent = studyCur === total-1 ? '학습 완료 →' : '다음 →';
+function loadStudy(){
+  const q=studyQs[studyCur],total=studyQs.length;
+  document.getElementById('st-prog').textContent=`${studyCur+1} / ${total}`;
+  document.getElementById('st-cat').textContent=q.cat;
+  document.getElementById('st-bar').style.width=`${((studyCur+1)/total)*100}%`;
+  document.getElementById('st-text').innerHTML=`${q.q}<br><br>정답: <b>${q.a}</b>`;
+  // 공부 모드 상세 설명
+  const detailEl=document.getElementById('st-detail-text');
+  const hintEl=document.getElementById('st-hint-box');
+  detailEl.textContent=q.detail||'';
+  if(q.hint){hintEl.textContent='💡 '+q.hint;hintEl.classList.add('has-hint');}
+  else{hintEl.textContent='';hintEl.classList.remove('has-hint');}
+  document.getElementById('st-prev').disabled=studyCur===0;
+  document.getElementById('st-next').textContent=studyCur===total-1?'학습 완료 →':'다음 →';
 }
-function moveStudy(dir) {
-  studyCur += dir;
-  if (studyCur >= studyQs.length) goHome();
-  else loadStudy();
-}
+function moveStudy(dir){studyCur+=dir;if(studyCur>=studyQs.length)goHome();else loadStudy();}
  
 /* ─── 문제 풀기 ─── */
-function buildExamPool() {
-  let pool = [];
-  if (selSets.includes(0)) pool = pool.concat(SET0);
-  if (selSets.includes(1)) pool = pool.concat(SET1);
-  return pool;
+function startExam(){
+  let pool=[];
+  if(selSets.includes(0)) pool=pool.concat(getSet0());
+  if(selSets.includes(1)) pool=pool.concat(getSet1());
+  qs=shuffle(pool);cur=0;okCnt=0;wrongs=[];combo=0;
+  show('exam');loadQ();
 }
- 
-function startExam() {
-  qs = shuffle(buildExamPool());
-  cur = 0; okCnt = 0; wrongs = []; combo = 0;
-  show('exam'); loadQ();
-}
- 
-function loadQ() {
-  answered = false;
-  const q = qs[cur], total = qs.length;
-  document.getElementById('ex-prog').textContent = `${cur+1} / ${total}`;
-  document.getElementById('ex-cat').textContent = q.cat;
-  document.getElementById('ex-bar').style.width = `${(cur/total)*100}%`;
-  document.getElementById('ex-rate').textContent = `정답률 ${cur > 0 ? Math.round(okCnt/cur*100)+'%' : '—'}`;
+function loadQ(){
+  answered=false;
+  const q=qs[cur],total=qs.length;
+  document.getElementById('ex-prog').textContent=`${cur+1} / ${total}`;
+  document.getElementById('ex-cat').textContent=q.cat;
+  document.getElementById('ex-bar').style.width=`${(cur/total)*100}%`;
+  document.getElementById('ex-rate').textContent=`정답률 ${cur>0?Math.round(okCnt/cur*100)+'%':'—'}`;
   document.getElementById('ex-card').classList.remove('ok-flash','ng-flash');
- 
-  const el = document.getElementById('ex-text');
-  el.textContent = q.q;
- 
-  document.getElementById('hint-box').style.display = 'none';
-  document.getElementById('hint-box').textContent = '';
-  document.getElementById('fb').className = 'feedback';
-  const nb = document.getElementById('next-btn');
-  nb.className = 'next-btn';
-  nb.textContent = cur < qs.length-1 ? '다음 문제 →' : '결과 보기 →';
-  document.getElementById('qbtns').style.display = 'flex';
-  const inp = document.getElementById('ans');
-  inp.value = ''; inp.disabled = false; inp.className = 'ans-inp';
+  document.getElementById('ex-text').textContent=q.q;
+  document.getElementById('hint-box').style.display='none';
+  document.getElementById('fb').className='feedback';
+  const nb=document.getElementById('next-btn');nb.className='next-btn';
+  nb.textContent=cur<qs.length-1?'다음 문제 →':'결과 보기 →';
+  document.getElementById('qbtns').style.display='flex';
+  const inp=document.getElementById('ans');inp.value='';inp.disabled=false;inp.className='ans-inp';
   document.getElementById('combo').classList.remove('on');
-  setTimeout(() => inp.focus(), 50);
+  setTimeout(()=>inp.focus(),50);
 }
- 
-function showHint() {
-  const h = document.getElementById('hint-box');
-  h.textContent = `힌트: ${getHint(qs[cur].a)}`;
-  h.style.display = 'block';
+function showHint(){
+  const h=document.getElementById('hint-box');
+  h.textContent=`힌트: ${getHint(qs[cur].a)}`;
+  h.style.display='block';
 }
-function revealAnswer() {
-  if (answered) return;
-  answered = true;
-  const q = qs[cur], inp = document.getElementById('ans');
-  inp.disabled = true; inp.className = 'ans-inp ng';
-  document.getElementById('qbtns').style.display = 'none';
+function revealAnswer(){
+  if(answered)return;answered=true;
+  const q=qs[cur],inp=document.getElementById('ans');
+  inp.disabled=true;inp.className='ans-inp ng';
+  document.getElementById('qbtns').style.display='none';
   document.getElementById('ex-card').classList.add('ng-flash');
-  const fb = document.getElementById('fb'); fb.className = 'feedback ng';
-  document.getElementById('fb-text').textContent = `정답: ${q.a}`;
+  const fb=document.getElementById('fb');fb.className='feedback ng';
+  document.getElementById('fb-text').textContent=`정답: ${q.a}`;
   document.getElementById('next-btn').classList.add('on');
-  wrongs.push({ label: q.q, user:'(정답 봄)', ans: q.a });
-  combo = 0;
+  wrongs.push({label:q.q,user:'(정답 봄)',ans:q.a});combo=0;
 }
-function check() {
-  if (answered) return;
-  const inp = document.getElementById('ans'), val = inp.value.trim();
-  if (!val) return;
-  answered = true; inp.disabled = true;
-  document.getElementById('qbtns').style.display = 'none';
-  const q = qs[cur], card = document.getElementById('ex-card'), fb = document.getElementById('fb');
-  if (isOk(val, q.a)) {
-    okCnt++; combo++;
-    inp.className = 'ans-inp ok'; card.classList.add('ok-flash'); fb.className = 'feedback ok';
-    document.getElementById('fb-text').textContent = '✓ 정답!';
-    if (combo >= 3) {
-      const cb = document.getElementById('combo');
-      cb.textContent = combo >= 10 ? `🔥 ${combo}연속 정답!!` : combo >= 5 ? `⚡ ${combo}연속 정답!` : `🔥 ${combo}연속 정답!`;
-      cb.classList.add('on');
-    }
+function check(){
+  if(answered)return;
+  const inp=document.getElementById('ans'),val=inp.value.trim();
+  if(!val)return;
+  answered=true;inp.disabled=true;
+  document.getElementById('qbtns').style.display='none';
+  const q=qs[cur],card=document.getElementById('ex-card'),fb=document.getElementById('fb');
+  if(isOk(val,q.a)){
+    okCnt++;combo++;inp.className='ans-inp ok';card.classList.add('ok-flash');fb.className='feedback ok';
+    document.getElementById('fb-text').textContent='✓ 정답!';
+    if(combo>=3){const cb=document.getElementById('combo');cb.textContent=combo>=10?`🔥 ${combo}연속 정답!!`:combo>=5?`⚡ ${combo}연속 정답!`:`🔥 ${combo}연속 정답!`;cb.classList.add('on');}
   } else {
-    combo = 0; inp.className = 'ans-inp ng'; card.classList.add('ng-flash'); fb.className = 'feedback ng';
-    document.getElementById('fb-text').textContent = `✗ 오답 — 정답: ${q.a}`;
-    wrongs.push({ label: q.q, user: val, ans: q.a });
+    combo=0;inp.className='ans-inp ng';card.classList.add('ng-flash');fb.className='feedback ng';
+    document.getElementById('fb-text').textContent=`✗ 오답 — 정답: ${q.a}`;
+    wrongs.push({label:q.q,user:val,ans:q.a});
   }
   document.getElementById('next-btn').classList.add('on');
 }
-function nextQ() {
-  cur++;
-  if (cur >= qs.length) showResult();
-  else loadQ();
-}
+function nextQ(){cur++;if(cur>=qs.length)showResult();else loadQ();}
  
 /* ─── 결과 ─── */
-function showResult() {
+function showResult(){
   show('result');
-  const total = qs.length, pct = Math.round(okCnt/total*100);
-  let n = 0;
-  const el = document.getElementById('r-score'); el.textContent = '0점';
-  const iv = setInterval(() => { n = Math.min(n + Math.ceil(pct/28), pct); el.textContent = n+'점'; if (n >= pct) clearInterval(iv); }, 30);
-  document.getElementById('r-msg').textContent = pct >= 95 ? '완벽해요! 🎉' : pct >= 80 ? '잘 했어요! 거의 다 왔어요!' : pct >= 60 ? '절반 이상! 조금만 더!' : '더 연습해봐요!';
-  document.getElementById('r-ok').textContent = okCnt;
-  document.getElementById('r-ng').textContent = wrongs.length;
-  document.getElementById('r-tot').textContent = total;
- 
-  // 카테고리 통계
-  const catMap = {};
-  qs.forEach(q => { if (!catMap[q.cat]) catMap[q.cat]={ok:0,total:0}; catMap[q.cat].total++; });
-  const wrongKeys = new Set(wrongs.map(w => w.ans));
-  qs.forEach(q => { if (!wrongKeys.has(q.a)) catMap[q.cat].ok++; });
-  const cats = Object.keys(catMap);
-  const cs = document.getElementById('cat-sec');
-  if (cats.length > 1) {
-    cs.innerHTML = `<div class="sec-title">카테고리별 정답률</div>` +
-      cats.map(c => {
-        const {ok,total} = catMap[c], p = Math.round(ok/total*100);
-        const cls = p===100?'perf':p<50?'poor':'';
-        return `<div class="cat-row"><span class="cat-nm" title="${c}">${c}</span><div class="bar-wrap"><div class="bar-fill ${cls}" style="width:0%" data-w="${p}%"></div></div><span class="cat-pct">${p}%</span></div>`;
-      }).join('');
-    setTimeout(() => document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w), 80);
-  } else cs.innerHTML = '';
- 
-  // 틀린 문제
-  const ws = document.getElementById('wrong-sec');
-  ws.innerHTML = wrongs.length === 0
-    ? '<p style="text-align:center;font-size:13px;color:var(--hint-c);padding:.5rem 0">틀린 문제가 없어요! 🎉</p>'
-    : `<div class="wrong-head">틀린 문제 (${wrongs.length}개)</div>` +
-      wrongs.map(w => `<div class="wrong-item"><span class="wq">${w.label}</span><br>내 답: <span class="wu">${w.user}</span> → 정답: <span class="wa">${w.ans}</span></div>`).join('');
- 
-  document.getElementById('rbtn-retry').style.display = wrongs.length > 0 ? '' : 'none';
+  const total=qs.length,pct=Math.round(okCnt/total*100);
+  let n=0;const el=document.getElementById('r-score');el.textContent='0점';
+  const iv=setInterval(()=>{n=Math.min(n+Math.ceil(pct/28),pct);el.textContent=n+'점';if(n>=pct)clearInterval(iv);},30);
+  document.getElementById('r-msg').textContent=pct>=95?'완벽해요! 🎉':pct>=80?'잘 했어요! 거의 다 왔어요!':pct>=60?'절반 이상! 조금만 더!':'더 연습해봐요!';
+  document.getElementById('r-ok').textContent=okCnt;
+  document.getElementById('r-ng').textContent=wrongs.length;
+  document.getElementById('r-tot').textContent=total;
+  const catMap={};
+  qs.forEach(q=>{if(!catMap[q.cat])catMap[q.cat]={ok:0,total:0};catMap[q.cat].total++;});
+  const wrongKeys=new Set(wrongs.map(w=>w.ans));
+  qs.forEach(q=>{if(!wrongKeys.has(q.a))catMap[q.cat].ok++;});
+  const cats=Object.keys(catMap),cs=document.getElementById('cat-sec');
+  if(cats.length>1){
+    cs.innerHTML=`<div class="sec-title">카테고리별 정답률</div>`+
+      cats.map(c=>{const{ok,total}=catMap[c],p=Math.round(ok/total*100),cls=p===100?'perf':p<50?'poor':'';
+        return `<div class="cat-row"><span class="cat-nm" title="${c}">${c}</span><div class="bar-wrap"><div class="bar-fill ${cls}" style="width:0%" data-w="${p}%"></div></div><span class="cat-pct">${p}%</span></div>`;}).join('');
+    setTimeout(()=>document.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w),80);
+  } else cs.innerHTML='';
+  const ws=document.getElementById('wrong-sec');
+  ws.innerHTML=wrongs.length===0
+    ?'<p style="text-align:center;font-size:13px;color:var(--hint-c);padding:.5rem 0">틀린 문제가 없어요! 🎉</p>'
+    :`<div class="wrong-head">틀린 문제 (${wrongs.length}개)</div>`+wrongs.map(w=>`<div class="wrong-item"><span class="wq">${w.label}</span><br>내 답: <span class="wu">${w.user}</span> → 정답: <span class="wa">${w.ans}</span></div>`).join('');
+  document.getElementById('rbtn-retry').style.display=wrongs.length>0?'':'none';
 }
- 
-function retryWrong() {
-  const all = [...SET0, ...SET1];
-  qs = shuffle(wrongs.map(w => all.find(q => q.a === w.ans) || { cat:'복습', q: w.label, a: w.ans }));
-  cur = 0; okCnt = 0; wrongs = []; combo = 0;
-  show('exam'); loadQ();
+function retryWrong(){
+  const all=[...getSet0(),...getSet1()];
+  qs=shuffle(wrongs.map(w=>all.find(q=>q.a===w.ans)||{cat:'복습',q:w.label,a:w.ans}));
+  cur=0;okCnt=0;wrongs=[];combo=0;show('exam');loadQ();
 }
  
 /* ─── 키보드 ─── */
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('exam').classList.contains('active')) {
-    if (!answered) check();
-    else if (document.getElementById('next-btn').classList.contains('on')) nextQ();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('exam').classList.contains('active')){
+    if(!answered)check();else if(document.getElementById('next-btn').classList.contains('on'))nextQ();
   }
-  if (e.key === 'Escape') closeModal();
+  if(e.key==='Escape')closeModal();
 });
 </script>
 </body>
